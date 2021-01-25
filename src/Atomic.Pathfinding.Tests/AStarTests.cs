@@ -7,12 +7,12 @@ using static Atomic.Pathfinding.Tests.Implementations.GridCell;
 namespace Atomic.Pathfinding.Tests
 {
     [TestFixture]
-    public class Tests
+    public class AStarTests
     {
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
         {
-            var matrix = new GridCell[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
+            var matrix = new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
             {
                 { _, _, _, _, _, _, _, _, _, _ },
                 { _, _, _, _, _, _, _, _, X, _ },
@@ -25,35 +25,30 @@ namespace Atomic.Pathfinding.Tests
                 { _, _, _, _, _, _, _, _, _, _ },
                 { _, _, _, _, _, _, _, _, _, _ },
             };
-            
 
             var grid = new Grid(matrix);
             var agent = new Agent
             {
-                Size = 2,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
+                Size = 2
             };
 
-            var aStar = new Pathfinding.Core.AStar(grid);
+            var aStar = new Core.AStar(grid);
 
             var start = (0, 8);
             var destination = (8, 2);
 
-            var path = aStar.GetPath(agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
             
-            Assert.IsTrue(path.IsPathFound);
+            Assert.IsTrue(result.IsPathFound);
             
-            agent.OnPathResult(path);
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
         }
         
         [Test]
         public void SingleAgent_AgentSize_Fail_Test()
         {
-            var matrix = new GridCell[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
+            var matrix = new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
             {
                 { _, _, _, _, _, _, _, _, _, _ },
                 { _, _, _, _, _, _, _, _, X, _ },
@@ -71,15 +66,10 @@ namespace Atomic.Pathfinding.Tests
             var grid = new Grid(matrix);
             var agent = new Agent
             {
-                Size = 3,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
+                Size = 3
             };
 
-            var aStar = new Pathfinding.Core.AStar(grid);
+            var aStar = new Core.AStar(grid);
 
             var start = (0, 8);
             var destination = (8, 2);
@@ -95,7 +85,7 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_CornersCutDisabled_Test()
         {
-            var matrix = new GridCell[,]
+            var matrix = new[,]
             {
                 { _, _, _, X, _, _, _, _, _, _ },
                 { _, _, _, X, _, _, _, _, _, _ },
@@ -111,26 +101,18 @@ namespace Atomic.Pathfinding.Tests
 
 
             var grid = new Grid(matrix);
-            var agent = new Agent
-            {
-                Size = 1,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
-            };
-
-            var aStar = new Pathfinding.Core.AStar(grid);
+            var agent = new Agent();
+            var aStar = new Core.AStar(grid);
 
             var start = (0, 0);
             var destination = (3, 2);
 
-            var path = aStar.GetPath(agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
 
-            Assert.IsTrue(path.IsPathFound);
+            Assert.IsTrue(result.IsPathFound);
 
-            agent.OnPathResult(path);
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
 
             Assert.IsFalse(((GridCell)grid.Matrix[1,2]).IsPath);
         }
@@ -138,7 +120,7 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_CornersCutEnabled_Test()
         {
-            var matrix = new GridCell[,]
+            var matrix = new[,]
             {
                 { _, _, _, X, _, _, _, _, _, _ },
                 { _, _, _, X, _, _, _, _, _, _ },
@@ -152,33 +134,25 @@ namespace Atomic.Pathfinding.Tests
                 { _, _, _, _, _, _, _, _, _, _ },
             };
 
-
             var grid = new Grid(matrix);
-            var agent = new Agent
-            {
-                Size = 1,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
-            };
+            var agent = new Agent();
 
             var settings = new PathfinderSettings
             {
                 IsMovementBetweenCornersEnabled = true
             };
 
-            var aStar = new Pathfinding.Core.AStar(grid, settings);
+            var aStar = new Core.AStar(grid, settings);
 
             var start = (0, 0);
             var destination = (3, 2);
 
-            var path = aStar.GetPath(agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
 
-            Assert.IsTrue(path.IsPathFound);
+            Assert.IsTrue(result.IsPathFound);
 
-            agent.OnPathResult(path);
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
 
             Assert.IsTrue(((GridCell)grid.Matrix[1, 2]).IsPath);
         }
@@ -187,23 +161,14 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_WeightsEnabled_Test()
         {
-            var matrix = new GridCell[,]
+            var matrix = new[,]
             {
                 { _, a, a, a, a, _, _, _, _, _ },
                 { _, _, _, _, _, _, _, _, _, _ }
             };
 
-
             var grid = new Grid(matrix);
-            var agent = new Agent
-            {
-                Size = 1,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
-            };
+            var agent = new Agent();
 
             var settings = new PathfinderSettings
             {
@@ -211,16 +176,17 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = true
             };
 
-            var aStar = new Pathfinding.Core.AStar(grid, settings);
+            var aStar = new Core.AStar(grid, settings);
 
             var start = (0, 0);
             var destination = (5, 0);
 
-            var path = aStar.GetPath(agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
 
-            Assert.IsTrue(path.IsPathFound);
+            Assert.IsTrue(result.IsPathFound);
 
-            agent.OnPathResult(path);
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
 
             Assert.IsFalse(((GridCell)grid.Matrix[0, 1]).IsPath);
         }
@@ -229,23 +195,14 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_WeightsDisabled_Test()
         {
-            var matrix = new GridCell[,]
+            var matrix = new[,]
             {
                 { _, a, a, a, a, _, _, _, _, _ },
                 { _, _, _, _, _, _, _, _, _, _ }
             };
 
-
             var grid = new Grid(matrix);
-            var agent = new Agent
-            {
-                Size = 1,
-                PathResultAction = result =>
-                {
-                    grid.UpdatePath(result.Path);
-                    Console.WriteLine(grid);
-                }
-            };
+            var agent = new Agent();
 
             var settings = new PathfinderSettings
             {
@@ -253,16 +210,17 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Pathfinding.Core.AStar(grid, settings);
+            var aStar = new Core.AStar(grid, settings);
 
             var start = (0, 0);
             var destination = (5, 0);
 
-            var path = aStar.GetPath(agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
 
-            Assert.IsTrue(path.IsPathFound);
+            Assert.IsTrue(result.IsPathFound);
 
-            agent.OnPathResult(path);
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
 
             Assert.IsTrue(((GridCell)grid.Matrix[0, 1]).IsPath);
         }
