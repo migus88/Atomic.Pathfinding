@@ -15,13 +15,14 @@ namespace Atomic.Pathfinding.Core
         private const double MaxHScoreBetweenNeighbors = 2;
         private const double HScorePerStraightMovement = 1;
         private const int MaxRetriesToGetGrid = 3;
-        
+        private const int MinPreloadedGridsAmount = 1;
+
         private readonly ConcurrentQueue<LocationGrid> _locationGrids = new ConcurrentQueue<LocationGrid>();
 
         private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
 
-        public AStar(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = 0)
+        public AStar(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = MinPreloadedGridsAmount)
         {
             if (grid?.Matrix == null || grid.Matrix.Length == 0)
                 throw new EmptyGridException();
@@ -29,16 +30,46 @@ namespace Atomic.Pathfinding.Core
             _settings = settings ?? new PathfinderSettings();
             _grid = grid;
 
-            if (preloadedGridsAmount > 0)
+            preloadedGridsAmount = preloadedGridsAmount < MinPreloadedGridsAmount
+                ? MinPreloadedGridsAmount
+                : preloadedGridsAmount;
+            
+            for (var i = 0; i < preloadedGridsAmount; i++)
             {
-                for (int i = 0; i < preloadedGridsAmount; i++)
-                {
-                    CreateLocationGrid();
-                }
+                CreateLocationGrid();
             }
         }
 
-        public void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to, bool runCallbackInCallingThread = true)
+        public void GetPathsParallel(IAgent agent, (int, int) from, (int, int)[] to,
+            bool runCallbackInCallingThread = true)
+        {
+            
+            var syncContext = SynchronizationContext.Current;
+            var grid = GetLocationGrid();
+
+            ThreadPool.QueueUserWorkItem(w =>
+            {
+                var bag = new ConcurrentBag<PathResult>();
+                
+                Parallel.ForEach(to, position =>
+                {
+                    var result = GetPathResult(agent, grid, from, position);
+                    bag.Add(result);
+                });
+
+                if (runCallbackInCallingThread)
+                {
+                    syncContext.Post(c => agent.OnParallelPathResults(bag.ToArray()), null);
+                }
+                else
+                {
+                    agent.OnParallelPathResults(bag.ToArray());
+                }
+            });
+        }
+
+        public void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to,
+            bool runCallbackInCallingThread = true)
         {
             var syncContext = SynchronizationContext.Current;
             var grid = GetLocationGrid();
@@ -58,10 +89,11 @@ namespace Atomic.Pathfinding.Core
             });
         }
 
-        public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to, bool postCallbackToAgent = false)
+        public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to,
+            bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
-            
+
             var result = await Task.Run(() => GetPathResult(agent, grid, from, to));
 
             if (postCallbackToAgent)
@@ -75,7 +107,7 @@ namespace Atomic.Pathfinding.Core
         public PathResult GetPath(IAgent agent, (int, int) from, (int, int) to, bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
-            
+
             var result = GetPathResult(agent, grid, from, to);
 
             if (postCallbackToAgent)
@@ -93,10 +125,10 @@ namespace Atomic.Pathfinding.Core
                 CreateLocationGrid();
             }
 
-            if (_locationGrids.TryDequeue(out var grid)) 
+            if (_locationGrids.TryDequeue(out var grid))
                 return grid;
-            
-            if(retryCount <= MaxRetriesToGetGrid)
+
+            if (retryCount <= MaxRetriesToGetGrid)
             {
                 retryCount++;
                 return GetLocationGrid(retryCount);
@@ -146,9 +178,9 @@ namespace Atomic.Pathfinding.Core
                         continue;
                     }
 
-                    var gScore = grid.Current.ScoreG 
-                        + GetNeighborTravelWeight(grid.Current.Position, neighbor.Position)
-                        + GetCellWeight(neighbor.Position);
+                    var gScore = grid.Current.ScoreG
+                                 + GetNeighborTravelWeight(grid.Current.Position, neighbor.Position)
+                                 + GetCellWeight(neighbor.Position);
 
                     var isBestScore = false;
 
@@ -178,9 +210,9 @@ namespace Atomic.Pathfinding.Core
             {
                 result.Path = ReconstructPath(grid.Current);
             }
-            
+
             _locationGrids.Enqueue(grid);
-            
+
             return result;
         }
 
@@ -213,7 +245,9 @@ namespace Atomic.Pathfinding.Core
             if (scoreH > MaxHScoreBetweenNeighbors)
                 throw new Exception("Can travel only to neighbors");
 
-            return scoreH == HScorePerStraightMovement ? _settings.StraightMovementCost : _settings.DiagonalMovementCost;
+            return scoreH == HScorePerStraightMovement
+                ? _settings.StraightMovementCost
+                : _settings.DiagonalMovementCost;
         }
 
         private int GetScoreH((int, int) start, (int, int) destination)
