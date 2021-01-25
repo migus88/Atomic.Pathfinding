@@ -39,7 +39,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid);
-            aStar.AddAgent(agent);
 
             var start = (0, 8);
             var destination = (8, 2);
@@ -81,7 +80,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid);
-            aStar.AddAgent(agent);
 
             var start = (0, 8);
             var destination = (8, 2);
@@ -124,7 +122,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid);
-            aStar.AddAgent(agent);
 
             var start = (0, 0);
             var destination = (3, 2);
@@ -173,7 +170,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid, settings);
-            aStar.AddAgent(agent);
 
             var start = (0, 0);
             var destination = (3, 2);
@@ -216,7 +212,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid, settings);
-            aStar.AddAgent(agent);
 
             var start = (0, 0);
             var destination = (5, 0);
@@ -259,7 +254,6 @@ namespace Atomic.Pathfinding.Tests
             };
 
             var aStar = new Pathfinding.Core.AStar(grid, settings);
-            aStar.AddAgent(agent);
 
             var start = (0, 0);
             var destination = (5, 0);

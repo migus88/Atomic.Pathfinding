@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,124 +14,106 @@ namespace Atomic.Pathfinding.Core
     {
         private const double MaxHScoreBetweenNeighbors = 2;
         private const double HScorePerStraightMovement = 1;
-
-        private readonly Dictionary<IAgent, LocationGrid> _agentGrids = new Dictionary<IAgent, LocationGrid>();
-        private readonly Dictionary<IAgent, bool> _agentBusiness = new Dictionary<IAgent, bool>();
-        private readonly Queue<LocationGrid> _unusedGrids = new Queue<LocationGrid>();
+        private const int MaxRetriesToGetGrid = 3;
+        
+        private readonly ConcurrentQueue<LocationGrid> _locationGrids = new ConcurrentQueue<LocationGrid>();
 
         private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
 
-        public AStar(IGrid grid, PathfinderSettings settings = null)
+        public AStar(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = 0)
         {
-            if (grid == null || grid.Matrix == null || grid.Matrix.Length == 0)
+            if (grid?.Matrix == null || grid.Matrix.Length == 0)
                 throw new EmptyGridException();
 
             _settings = settings ?? new PathfinderSettings();
             _grid = grid;
-        }
 
-        public void AddAgent(IAgent agent)
-        {
-            if (_agentGrids.HasKey(agent))
-                throw new AgentAlreadyExistsException();
-
-            if(agent.Size <= 0)
-                throw new AgentTooSmallException();
-
-            var height = _grid.Matrix.GetLength(0);
-            var width = _grid.Matrix.GetLength(1);
-            
-            if(agent.Size > height || agent.Size > width)
-                throw new AgentTooBigException();
-            
-            LocationGrid grid;
-
-            if (_unusedGrids.Count > 0)
+            if (preloadedGridsAmount > 0)
             {
-                grid = _unusedGrids.Dequeue();
-            }
-            else
-            {
-                grid = new LocationGrid(_grid, _settings);
-            }
-
-            _agentGrids.Add(agent, grid);
-            _agentBusiness.Add(agent, false);
-        }
-
-        public void RemoveAgent(IAgent agent)
-        {
-            if (_agentGrids.TryGetValue(agent, out var grid))
-            {
-                _unusedGrids.Enqueue(grid);
-                _agentGrids.Remove(agent);
-                _agentBusiness.Remove(agent);
+                for (int i = 0; i < preloadedGridsAmount; i++)
+                {
+                    CreateLocationGrid();
+                }
             }
         }
 
-        public bool IsAgentBusy(IAgent agent) => _agentBusiness.GetValueOrDefault(agent, false);
-
-        public async void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to)
+        public void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to, bool runCallbackInCallingThread = true)
         {
-            ValidateAgent(agent, out var grid);
-
-            _agentBusiness[agent] = true;
-
-            PathResult? result = null;
+            var syncContext = SynchronizationContext.Current;
+            var grid = GetLocationGrid();
 
             ThreadPool.QueueUserWorkItem(w =>
             {
-                result = GetPathResult(agent, grid, from, to);
-            });
+                var result = GetPathResult(agent, grid, from, to);
 
-            while (result == null)
-            {
-                await Task.Yield();
-            }
-
-            _agentBusiness[agent] = false;
-
-            agent.OnPathResult(result.Value);
-        }
-
-        public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to)
-        {
-            ValidateAgent(agent, out var grid);
-
-            _agentBusiness[agent] = true;
-            var result = await Task.Run(() => GetPathResult(agent, grid, from, to));
-            _agentBusiness[agent] = false;
-
-            return result;
-        }
-
-        public PathResult GetPath(IAgent agent, (int, int) from, (int, int) to)
-        {
-            ValidateAgent(agent, out var grid);
-
-            _agentBusiness[agent] = true;
-            var result = GetPathResult(agent, grid, from, to);
-            _agentBusiness[agent] = false;
-
-            return result;
-        }
-
-        private void ValidateAgent(IAgent agent, out LocationGrid grid)
-        {
-            if (_agentGrids.TryGetValue(agent, out var value))
-            {
-                if (_agentBusiness[agent])
+                if (runCallbackInCallingThread)
                 {
-                    throw new AgentBusyException();
+                    syncContext.Post(c => agent.OnPathResult(result), null);
                 }
+                else
+                {
+                    agent.OnPathResult(result);
+                }
+            });
+        }
 
-                grid = value;
-            }
-            else
+        public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to, bool postCallbackToAgent = false)
+        {
+            var grid = GetLocationGrid();
+            
+            var result = await Task.Run(() => GetPathResult(agent, grid, from, to));
+
+            if (postCallbackToAgent)
             {
-                throw new AgentNotFoundException();
+                agent.OnPathResult(result);
             }
+
+            return result;
+        }
+
+        public PathResult GetPath(IAgent agent, (int, int) from, (int, int) to, bool postCallbackToAgent = false)
+        {
+            var grid = GetLocationGrid();
+            
+            var result = GetPathResult(agent, grid, from, to);
+
+            if (postCallbackToAgent)
+            {
+                agent.OnPathResult(result);
+            }
+
+            return result;
+        }
+
+        private LocationGrid GetLocationGrid(int retryCount = 0)
+        {
+            if (_locationGrids.Count == 0)
+            {
+                CreateLocationGrid();
+            }
+
+            if (_locationGrids.TryDequeue(out var grid)) 
+                return grid;
+            
+            if(retryCount <= MaxRetriesToGetGrid)
+            {
+                retryCount++;
+                return GetLocationGrid(retryCount);
+            }
+
+            //This exception will probably never be thrown, but potentially this can
+            //happen when multiple client threads access the 'GetPath' method while
+            //there is only one grid left in the queue more times than defined in 'MaxRetriesToGetGrid' const.
+            //Generally it is not a good idea to access this class from different threads. If multithreaded
+            //pathfinding is required, it's better to use the 'GetPathInNewThread' method.
+            throw new LocationGridUnreachableException();
+        }
+
+        private void CreateLocationGrid()
+        {
+            var grid = new LocationGrid(_grid, _settings);
+            _locationGrids.Enqueue(grid);
         }
 
         private PathResult GetPathResult(IAgent agent, LocationGrid grid, (int, int) from, (int, int) to)
@@ -195,7 +178,9 @@ namespace Atomic.Pathfinding.Core
             {
                 result.Path = ReconstructPath(grid.Current);
             }
-
+            
+            _locationGrids.Enqueue(grid);
+            
             return result;
         }
 
