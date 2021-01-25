@@ -18,11 +18,5 @@ namespace Atomic.Pathfinding.Core.Interfaces
         /// </summary>
         /// <param name="result">Requested path</param>
         void OnPathResult(PathResult result);
-        
-        /// <summary>
-        /// Triggered when multiple paths requested in parallel.
-        /// </summary>
-        /// <param name="results">All requested paths</param>
-        void OnParallelPathResults(PathResult[] results);
     }
 }

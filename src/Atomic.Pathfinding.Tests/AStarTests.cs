@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Tests.Implementations;
 using NUnit.Framework;
@@ -12,19 +14,20 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
         {
-            var matrix = new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
-            {
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, X, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, X, _, _, _, _, _, X, _ },
-                { _, _, X, X, X, _, _, X, _, _ },
-                { _, _, _, X, X, _, X, _, _, X },
-                { _, _, _, _, X, _, _, _, _, X },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-            };
+            var matrix =
+                new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
+                {
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, _, _, _, _, _, X, _},
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, X, _, _, _, _, _, _},
+                    {_, _, X, _, _, _, _, _, X, _},
+                    {_, _, X, X, X, _, _, X, _, _},
+                    {_, _, _, X, X, _, X, _, _, X},
+                    {_, _, _, _, X, _, _, _, _, X},
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, _, _, _, _, _, _, _},
+                };
 
             var grid = new Grid(matrix);
             var agent = new Agent
@@ -38,30 +41,31 @@ namespace Atomic.Pathfinding.Tests
             var destination = (8, 2);
 
             var result = aStar.GetPath(agent, start, destination);
-            
+
             Assert.IsTrue(result.IsPathFound);
-            
+
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
         }
-        
+
         [Test]
         public void SingleAgent_AgentSize_Fail_Test()
         {
-            var matrix = new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
-            {
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, X, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, X, _, _, _, _, _, X, _ },
-                { _, _, X, X, X, _, _, X, _, _ },
-                { _, _, _, X, X, _, X, _, _, X },
-                { _, _, _, _, X, _, _, _, _, X },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-            };
-            
+            var matrix =
+                new[,] //Example from here: https://harablog.wordpress.com/2009/01/29/clearance-based-pathfinding/
+                {
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, _, _, _, _, _, X, _},
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, X, _, _, _, _, _, _},
+                    {_, _, X, _, _, _, _, _, X, _},
+                    {_, _, X, X, X, _, _, X, _, _},
+                    {_, _, _, X, X, _, X, _, _, X},
+                    {_, _, _, _, X, _, _, _, _, X},
+                    {_, _, _, _, _, _, _, _, _, _},
+                    {_, _, _, _, _, _, _, _, _, _},
+                };
+
 
             var grid = new Grid(matrix);
             var agent = new Agent
@@ -75,7 +79,7 @@ namespace Atomic.Pathfinding.Tests
             var destination = (8, 2);
 
             var path = aStar.GetPath(agent, start, destination);
-            
+
             Assert.IsFalse(path.IsPathFound);
 
             Console.WriteLine("The path for agent with size 3 doesn't exist.");
@@ -87,16 +91,16 @@ namespace Atomic.Pathfinding.Tests
         {
             var matrix = new[,]
             {
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, X, _, _, _, _, _, _, _ },
-                { _, X, X, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
+                {_, _, _, X, _, _, _, _, _, _},
+                {_, _, _, X, _, _, _, _, _, _},
+                {_, _, X, _, _, _, _, _, _, _},
+                {_, X, X, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
             };
 
 
@@ -114,7 +118,7 @@ namespace Atomic.Pathfinding.Tests
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
 
-            Assert.IsFalse(((GridCell)grid.Matrix[1,2]).IsPath);
+            Assert.IsFalse(((GridCell) grid.Matrix[1, 2]).IsPath);
         }
 
         [Test]
@@ -122,16 +126,16 @@ namespace Atomic.Pathfinding.Tests
         {
             var matrix = new[,]
             {
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, _, X, _, _, _, _, _, _ },
-                { _, _, X, _, _, _, _, _, _, _ },
-                { _, X, X, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ },
+                {_, _, _, X, _, _, _, _, _, _},
+                {_, _, _, X, _, _, _, _, _, _},
+                {_, _, X, _, _, _, _, _, _, _},
+                {_, X, X, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
             };
 
             var grid = new Grid(matrix);
@@ -154,7 +158,7 @@ namespace Atomic.Pathfinding.Tests
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
 
-            Assert.IsTrue(((GridCell)grid.Matrix[1, 2]).IsPath);
+            Assert.IsTrue(((GridCell) grid.Matrix[1, 2]).IsPath);
         }
 
 
@@ -163,8 +167,8 @@ namespace Atomic.Pathfinding.Tests
         {
             var matrix = new[,]
             {
-                { _, a, a, a, a, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ }
+                {_, a, a, a, a, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _}
             };
 
             var grid = new Grid(matrix);
@@ -188,7 +192,7 @@ namespace Atomic.Pathfinding.Tests
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
 
-            Assert.IsFalse(((GridCell)grid.Matrix[0, 1]).IsPath);
+            Assert.IsFalse(((GridCell) grid.Matrix[0, 1]).IsPath);
         }
 
 
@@ -197,8 +201,8 @@ namespace Atomic.Pathfinding.Tests
         {
             var matrix = new[,]
             {
-                { _, a, a, a, a, _, _, _, _, _ },
-                { _, _, _, _, _, _, _, _, _, _ }
+                {_, a, a, a, a, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _}
             };
 
             var grid = new Grid(matrix);
@@ -222,7 +226,41 @@ namespace Atomic.Pathfinding.Tests
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
 
-            Assert.IsTrue(((GridCell)grid.Matrix[0, 1]).IsPath);
+            Assert.IsTrue(((GridCell) grid.Matrix[0, 1]).IsPath);
+        }
+
+        [Test]
+        public async Task SingleAgent_ParallelPaths_Test()
+        {
+            var matrix = new[,]
+            {
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+                {_, _, _, _, _, _, _, _, _, _},
+            };
+
+
+            var grid = new Grid(matrix);
+            var aStar = new Core.AStar(grid);
+
+            var agent = new Agent();
+
+            var start = (0, 0);
+            var destination1 = (3, 2);
+            var destination2 = (5, 4);
+            var destination3 = (7, 7);
+
+            var pathResults = await aStar.GetPathsParallel(agent, start, new[] {destination1, destination2, destination3});
+
+            Assert.IsTrue(pathResults.Length == 3);
+            Assert.IsTrue(pathResults.All(r => r.IsPathFound));
         }
     }
 }

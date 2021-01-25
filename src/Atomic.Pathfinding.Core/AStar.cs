@@ -33,39 +33,27 @@ namespace Atomic.Pathfinding.Core
             preloadedGridsAmount = preloadedGridsAmount < MinPreloadedGridsAmount
                 ? MinPreloadedGridsAmount
                 : preloadedGridsAmount;
-            
+
             for (var i = 0; i < preloadedGridsAmount; i++)
             {
                 CreateLocationGrid();
             }
         }
 
-        public void GetPathsParallel(IAgent agent, (int, int) from, (int, int)[] to,
-            bool runCallbackInCallingThread = true)
+        public async Task<PathResult[]> GetPathsParallel(IAgent agent, (int, int) from, (int, int)[] to)
         {
-            
-            var syncContext = SynchronizationContext.Current;
-            var grid = GetLocationGrid();
+            var bag = new ConcurrentBag<PathResult>();
 
-            ThreadPool.QueueUserWorkItem(w =>
+            await Task.Run(() =>
             {
-                var bag = new ConcurrentBag<PathResult>();
-                
                 Parallel.ForEach(to, position =>
                 {
+                    var grid = GetLocationGrid();
                     var result = GetPathResult(agent, grid, from, position);
                     bag.Add(result);
                 });
-
-                if (runCallbackInCallingThread)
-                {
-                    syncContext.Post(c => agent.OnParallelPathResults(bag.ToArray()), null);
-                }
-                else
-                {
-                    agent.OnParallelPathResults(bag.ToArray());
-                }
             });
+            return bag.ToArray();
         }
 
         public void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to,
