@@ -3089,6 +3089,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _size: 1
+  _speed: 3
 --- !u!114 &1810986432 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5984308907335214461, guid: bd43cc1f076620f4a9e6d4c353ac514c,

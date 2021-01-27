@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour, IGridCell
 {
+    
     public bool IsWalkable
     {
         get => _isWalkable;
@@ -32,13 +33,19 @@ public class Tile : MonoBehaviour, IGridCell
     [SerializeField] private bool _isWalkable = true;
     [SerializeField] private double _weight = 1;
     [SerializeField] private GameObject _wall;
+    
 
     private void Awake()
     {
         IsWalkable = _isWalkable;
     }
 
-    #if UNITY_EDITOR
+    private void OnMouseDown()
+    {
+        PathManager.Instance.OnTileClicked(_x, _y);
+    }
+
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         UnityEditor.Handles.color = Color.cyan;
