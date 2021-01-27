@@ -233,7 +233,7 @@ namespace Atomic.Pathfinding.Core
             if (scoreH > MaxHScoreBetweenNeighbors)
                 throw new Exception("Can travel only to neighbors");
 
-            return scoreH == HScorePerStraightMovement
+            return Math.Abs(scoreH - HScorePerStraightMovement) < 0.01
                 ? _settings.StraightMovementCost
                 : _settings.DiagonalMovementCost;
         }
