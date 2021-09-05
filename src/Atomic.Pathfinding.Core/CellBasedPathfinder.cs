@@ -98,7 +98,7 @@ namespace Atomic.Pathfinding.Core
             var scoreF = GetScoreH(from, to);
             start.SetScoreF(scoreF);
 
-            grid.OpenSet.Add(from, start);
+            grid.OpenSet.Add(start);
 
             while (grid.OpenSet.Count > 0)
             {
@@ -109,8 +109,8 @@ namespace Atomic.Pathfinding.Core
                     break;
                 }
 
-                grid.ClosedSet.Add(grid.Current.Position, grid.Current);
-                grid.OpenSet.Remove(grid.Current.Position);
+                grid.ClosedSet.Add(grid.Current);
+                grid.OpenSet.Remove(grid.Current);
 
                 var neighbors = grid.GetNeighbors(grid.Current.Position, agent.Size);
 
@@ -119,7 +119,7 @@ namespace Atomic.Pathfinding.Core
                     if(neighbor == null)
                         continue;
                     
-                    if (grid.ClosedSet.HasKey(neighbor.Position))
+                    if (grid.ClosedSet.HasKey(neighbor))
                     {
                         continue;
                     }
@@ -130,12 +130,12 @@ namespace Atomic.Pathfinding.Core
 
                     var isBestScore = false;
 
-                    if (!grid.OpenSet.HasKey(neighbor.Position))
+                    if (!grid.OpenSet.HasKey(neighbor))
                     {
                         isBestScore = true;
                         var scoreH = GetScoreH(neighbor.Position, to);
                         neighbor.SetScoreH(scoreH);
-                        grid.OpenSet.Add(neighbor.Position, neighbor);
+                        grid.OpenSet.Add(neighbor);
                     }
                     else if (gScore < neighbor.ScoreG)
                     {

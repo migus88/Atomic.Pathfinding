@@ -18,10 +18,10 @@ namespace Atomic.Pathfinding.Core.Internal
         private const int RightDownNeighborPosition = 6;
         private const int RightUpNeighborPosition = 7;
         
-        public Dictionary<Coordinate, Location> OpenSet { get; private set; } = new Dictionary<Coordinate, Location>();
+        public HashSet<Location> OpenSet { get; private set; } = new HashSet<Location>();
 
-        public Dictionary<Coordinate, Location> ClosedSet { get; private set; } =
-            new Dictionary<Coordinate, Location>();
+        public HashSet<Location> ClosedSet { get; private set; } =
+            new HashSet<Location>();
 
         public Location Current { get; set; } = null;
 

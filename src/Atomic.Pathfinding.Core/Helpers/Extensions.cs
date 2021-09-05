@@ -9,6 +9,11 @@ namespace Atomic.Pathfinding.Core.Helpers
         {
             return dict.TryGetValue(key, out var result);
         }
+        
+        public static bool HasKey<TKey>(this HashSet<TKey> hash, TKey key)
+        {
+            return hash.Contains(key);
+        }
 
         public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defaultValue = default(TValue))
         {
