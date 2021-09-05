@@ -9,7 +9,7 @@ using static Atomic.Pathfinding.Tests.Implementations.GridCell;
 namespace Atomic.Pathfinding.Tests
 {
     [TestFixture]
-    public class AStarTests
+    public class CellBasedPathfinderTests
     {
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
@@ -35,7 +35,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 2
             };
 
-            var aStar = new Core.AStar(grid);
+            var aStar = new Core.CellBasedPathfinder(grid);
 
             var start = (0, 8);
             var destination = (8, 2);
@@ -73,7 +73,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 3
             };
 
-            var aStar = new Core.AStar(grid);
+            var aStar = new Core.CellBasedPathfinder(grid);
 
             var start = (0, 8);
             var destination = (8, 2);
@@ -106,7 +106,7 @@ namespace Atomic.Pathfinding.Tests
 
             var grid = new Grid(matrix);
             var agent = new Agent();
-            var aStar = new Core.AStar(grid);
+            var aStar = new Core.CellBasedPathfinder(grid);
 
             var start = (0, 0);
             var destination = (3, 2);
@@ -146,7 +146,7 @@ namespace Atomic.Pathfinding.Tests
                 IsMovementBetweenCornersEnabled = true
             };
 
-            var aStar = new Core.AStar(grid, settings);
+            var aStar = new Core.CellBasedPathfinder(grid, settings);
 
             var start = (0, 0);
             var destination = (3, 2);
@@ -180,7 +180,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = true
             };
 
-            var aStar = new Core.AStar(grid, settings);
+            var aStar = new Core.CellBasedPathfinder(grid, settings);
 
             var start = (0, 0);
             var destination = (5, 0);
@@ -214,7 +214,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Core.AStar(grid, settings);
+            var aStar = new Core.CellBasedPathfinder(grid, settings);
 
             var start = (0, 0);
             var destination = (5, 0);

@@ -10,7 +10,11 @@ using Atomic.Pathfinding.Core.Internal;
 
 namespace Atomic.Pathfinding.Core
 {
-    public class AStar
+    /// <summary>
+    /// Finds path in a cell based environment. <br/>
+    /// Ideal for situations with limited amount of cells
+    /// </summary>
+    public class CellBasedPathfinder
     {
         private const double MaxHScoreBetweenNeighbors = 2;
         private const double HScorePerStraightMovement = 1;
@@ -22,7 +26,7 @@ namespace Atomic.Pathfinding.Core
         private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
 
-        public AStar(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = MinPreloadedGridsAmount)
+        public CellBasedPathfinder(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = MinPreloadedGridsAmount)
         {
             if (grid?.Matrix == null || grid.Matrix.Length == 0)
                 throw new EmptyGridException();

@@ -48,7 +48,7 @@
   <ItemGroup>
     <Compile Include="Implementations\Agent.cs" />
     <Compile Include="Implementations\Grid.cs" />
-    <Compile Include="AStarTests.cs" />
+    <Compile Include="CellBasedPathfinderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
