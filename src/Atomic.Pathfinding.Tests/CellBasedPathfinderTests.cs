@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tests.Implementations;
 using NUnit.Framework;
 using static Atomic.Pathfinding.Tests.Implementations.GridCell;
@@ -227,6 +228,40 @@ namespace Atomic.Pathfinding.Tests
             Console.WriteLine(grid);
 
             Assert.IsTrue(((GridCell) grid.Matrix[0, 1]).IsPath);
+        }
+        
+        [Test]
+        public void BasicDiagonalPath_Test()
+        {
+            var matrix = new GridCell[100,100];
+
+            for (int i = 0; i < 100; i++)
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    matrix[i, j] = new GridCell {IsWalkable = true, IsOccupied = false, Weight = 0};
+                }
+            }
+
+            var grid = new Grid(matrix);
+            var agent = new Agent();
+
+            var settings = new PathfinderSettings
+            {
+                IsCellWeightEnabled = false
+            };
+
+            var aStar = new Core.CellBasedPathfinder(grid, settings);
+
+            var start = new Coordinate {X = 0, Y = 0};
+            var destination = new Coordinate {X = 99, Y = 99};
+
+            var result = aStar.GetPath(agent, start, destination);
+
+            Assert.IsTrue(result.IsPathFound);
+
+            grid.UpdatePath(result.Path);
+            Console.WriteLine(grid);
         }
     }
 }

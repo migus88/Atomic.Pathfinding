@@ -20,9 +20,6 @@ namespace Atomic.Pathfinding.Core.Internal
         
         public HashSet<Location> OpenSet { get; private set; } = new HashSet<Location>();
 
-        public HashSet<Location> ClosedSet { get; private set; } =
-            new HashSet<Location>();
-
         public Location Current { get; set; } = null;
 
         private readonly Location[,] _matrix;
@@ -106,7 +103,6 @@ namespace Atomic.Pathfinding.Core.Internal
         public void Reset()
         {
             OpenSet.Clear();
-            ClosedSet.Clear();
             Current = null;
 
             foreach (var item in _matrix)

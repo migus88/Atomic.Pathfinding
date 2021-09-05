@@ -95,17 +95,15 @@ namespace Atomic.Pathfinding.Core
                     break;
                 }
 
-                grid.ClosedSet.Add(grid.Current);
+                grid.Current.IsClosed = true;
+
                 grid.OpenSet.Remove(grid.Current);
 
                 var neighbors = grid.GetNeighbors(grid.Current.Position, agent.Size);
 
                 foreach (var neighbor in neighbors)
                 {
-                    if(neighbor == null)
-                        continue;
-                    
-                    if (grid.ClosedSet.HasKey(neighbor))
+                    if(neighbor == null || neighbor.IsClosed)
                     {
                         continue;
                     }

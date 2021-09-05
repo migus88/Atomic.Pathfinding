@@ -4,6 +4,8 @@ namespace Atomic.Pathfinding.Core.Internal
 {
     internal class Location
     {
+        public bool IsClosed { get; set; }
+        
         public Coordinate Position { get; private set; }
         public double ScoreF { get; private set; }
         public double ScoreH { get; private set; }
@@ -16,6 +18,7 @@ namespace Atomic.Pathfinding.Core.Internal
             ScoreG = 0;
             ScoreH = 0;
             Parent = null;
+            IsClosed = false;
         }
 
         public void SetPosition(Coordinate position)
