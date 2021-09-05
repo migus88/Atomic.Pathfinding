@@ -228,39 +228,5 @@ namespace Atomic.Pathfinding.Tests
 
             Assert.IsTrue(((GridCell) grid.Matrix[0, 1]).IsPath);
         }
-
-        [Test]
-        public async Task SingleAgent_ParallelPaths_Test()
-        {
-            var matrix = new[,]
-            {
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-                {_, _, _, _, _, _, _, _, _, _},
-            };
-
-
-            var grid = new Grid(matrix);
-            var aStar = new Core.AStar(grid);
-
-            var agent = new Agent();
-
-            var start = (0, 0);
-            var destination1 = (3, 2);
-            var destination2 = (5, 4);
-            var destination3 = (7, 7);
-
-            var pathResults = await aStar.GetPathsParallel(agent, start, new[] {destination1, destination2, destination3});
-
-            Assert.IsTrue(pathResults.Length == 3);
-            Assert.IsTrue(pathResults.All(r => r.IsPathFound));
-        }
     }
 }

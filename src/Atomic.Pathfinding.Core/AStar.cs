@@ -40,43 +40,6 @@ namespace Atomic.Pathfinding.Core
             }
         }
 
-        public async Task<PathResult[]> GetPathsParallel(IAgent agent, (int, int) from, (int, int)[] to)
-        {
-            var bag = new ConcurrentBag<PathResult>();
-
-            await Task.Run(() =>
-            {
-                Parallel.ForEach(to, position =>
-                {
-                    var grid = GetLocationGrid();
-                    var result = GetPathResult(agent, grid, from, position);
-                    bag.Add(result);
-                });
-            });
-            return bag.ToArray();
-        }
-
-        public void GetPathInNewThread(IAgent agent, (int, int) from, (int, int) to,
-            bool runCallbackInCallingThread = true)
-        {
-            var syncContext = SynchronizationContext.Current;
-            var grid = GetLocationGrid();
-
-            ThreadPool.QueueUserWorkItem(w =>
-            {
-                var result = GetPathResult(agent, grid, from, to);
-
-                if (runCallbackInCallingThread)
-                {
-                    syncContext.Post(c => agent.OnPathResult(result), null);
-                }
-                else
-                {
-                    agent.OnPathResult(result);
-                }
-            });
-        }
-
         public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to,
             bool postCallbackToAgent = false)
         {
