@@ -44,21 +44,6 @@ namespace Atomic.Pathfinding.Core
             }
         }
 
-        public async Task<PathResult> GetPathAsync(IAgent agent, Coordinate from, Coordinate to,
-            bool postCallbackToAgent = false)
-        {
-            var grid = GetLocationGrid();
-
-            var result = await Task.Run(() => GetPathResult(agent, grid, from, to));
-
-            if (postCallbackToAgent)
-            {
-                agent.OnPathResult(result);
-            }
-
-            return result;
-        }
-
         public PathResult GetPath(IAgent agent, Coordinate from, Coordinate to, bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
@@ -73,7 +58,7 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
-        private LocationGrid GetLocationGrid(int retryCount = 0)
+        private LocationGrid GetLocationGrid()
         {
             if (_locationGrids.Count == 0)
             {
