@@ -84,6 +84,7 @@ namespace Atomic.Pathfinding.Core
             start.SetScoreF(scoreF);
 
             grid.OpenSet.Add(start);
+            var coordinatedCount = 0;
 
             while (grid.OpenSet.Count > 0)
             {
@@ -129,6 +130,7 @@ namespace Atomic.Pathfinding.Core
 
                     if (isBestScore)
                     {
+                        coordinatedCount++;
                         neighbor.SetParent(grid.Current);
                         neighbor.SetScoreG(gScore);
                         neighbor.SetScoreF(neighbor.ScoreG + neighbor.ScoreH);
@@ -140,7 +142,7 @@ namespace Atomic.Pathfinding.Core
 
             if (grid.Current.Position == to)
             {
-                result.Path = ReconstructPath(grid.Current);
+                result.Path = ReconstructPath(grid.Current, coordinatedCount);
             }
 
             _locationGrids.Enqueue(grid);
@@ -148,21 +150,24 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
-        private List<Coordinate> ReconstructPath(Location last)
+        private Coordinate[] ReconstructPath(Location last, int coordinatesCount)
         {
             if (last == null)
                 return null;
 
-            var list = new List<Coordinate>();
             Location current = last;
+            
+            var result = new Coordinate[coordinatesCount];
+            var index = coordinatesCount - 1;
 
             while (current != null)
             {
-                list.Insert(0, current.Position);
+                result[index] = current.Position;
                 current = current.Parent;
+                index--;
             }
 
-            return list;
+            return result;
         }
 
         private double GetCellWeight(Coordinate position)
