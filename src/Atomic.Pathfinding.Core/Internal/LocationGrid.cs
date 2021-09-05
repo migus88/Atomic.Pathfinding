@@ -7,10 +7,10 @@ namespace Atomic.Pathfinding.Core.Internal
 {
     internal class LocationGrid
     {
-        public Dictionary<(int, int), Location> OpenSet { get; private set; } = new Dictionary<(int, int), Location>();
+        public Dictionary<Coordinate, Location> OpenSet { get; private set; } = new Dictionary<Coordinate, Location>();
 
-        public Dictionary<(int, int), Location> ClosedSet { get; private set; } =
-            new Dictionary<(int, int), Location>();
+        public Dictionary<Coordinate, Location> ClosedSet { get; private set; } =
+            new Dictionary<Coordinate, Location>();
 
         public Location Current { get; set; } = null;
 
@@ -31,44 +31,44 @@ namespace Atomic.Pathfinding.Core.Internal
 
             _matrix = new Location[_height, _width];
 
-            for (int x = 0; x < _width; x++)
+            for (var x = 0; x < _width; x++)
             {
-                for (int y = 0; y < _height; y++)
+                for (var y = 0; y < _height; y++)
                 {
-                    _matrix[y, x] = new Location { Position = (x, y) };
+                    _matrix[y, x] = new Location { Position = new Coordinate {X = x, Y = y} };
                 }
             }
         }
 
-        public Location GetLocation((int, int) position)
+        public Location GetLocation(Coordinate position)
         {
-            return GetLocation(position.X(), position.Y());
+            return GetLocation(position.X, position.Y);
         }
 
 
         //TODO: This method creates garbage. Reuse the result.
-        public List<Location> GetNeighbors((int, int) position, int agentSize)
+        public List<Location> GetNeighbors(Coordinate position, int agentSize)
         {
             var list = new List<Location>(_settings.IsDiagonalMovementEnabled ? 8 : 4);
 
-            var canGoLeft = PopulateWalkableLocation(ref list, position.X() - 1, position.Y(), agentSize);
-            var canGoRight = PopulateWalkableLocation(ref list, position.X() + 1, position.Y(), agentSize);
-            var canGoDown = PopulateWalkableLocation(ref list, position.X(), position.Y() + 1, agentSize);
-            var canGoUp = PopulateWalkableLocation(ref list, position.X(), position.Y() - 1, agentSize);
+            var canGoLeft = PopulateWalkableLocation(ref list, position.X - 1, position.Y, agentSize);
+            var canGoRight = PopulateWalkableLocation(ref list, position.X + 1, position.Y, agentSize);
+            var canGoDown = PopulateWalkableLocation(ref list, position.X, position.Y + 1, agentSize);
+            var canGoUp = PopulateWalkableLocation(ref list, position.X, position.Y - 1, agentSize);
 
             if (_settings.IsDiagonalMovementEnabled)
             {
                 if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X() - 1, position.Y() + 1, agentSize);
+                    PopulateWalkableLocation(ref list, position.X - 1, position.Y + 1, agentSize);
 
                 if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X() - 1, position.Y() - 1, agentSize);
+                    PopulateWalkableLocation(ref list, position.X - 1, position.Y - 1, agentSize);
 
                 if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X() + 1, position.Y() + 1, agentSize);
+                    PopulateWalkableLocation(ref list, position.X + 1, position.Y + 1, agentSize);
 
                 if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X() + 1, position.Y() - 1, agentSize);
+                    PopulateWalkableLocation(ref list, position.X + 1, position.Y - 1, agentSize);
             }
 
             return list;

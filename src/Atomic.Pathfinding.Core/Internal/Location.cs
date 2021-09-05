@@ -1,8 +1,10 @@
-﻿namespace Atomic.Pathfinding.Core.Internal
+﻿using Atomic.Pathfinding.Core.Data;
+
+namespace Atomic.Pathfinding.Core.Internal
 {
     internal class Location
     {
-        public (int, int) Position { get; set; }
+        public Coordinate Position { get; set; }
         public double ScoreF { get; set; }
         public double ScoreH { get; set; }
         public double ScoreG { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
 
@@ -50,7 +51,7 @@ namespace Atomic.Pathfinding.Tests.Implementations
             return builder.ToString();
         }
 
-        public void UpdatePath(List<(int,int)> path)
+        public void UpdatePath(List<Coordinate> path)
         {
             var matrix = Matrix as GridCell[,];
 
@@ -61,7 +62,7 @@ namespace Atomic.Pathfinding.Tests.Implementations
 
             foreach (var item in path)
             {
-                matrix[item.Y(), item.X()].IsPath = true;
+                matrix[item.Y, item.X].IsPath = true;
             }
         }
 

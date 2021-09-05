@@ -44,7 +44,7 @@ namespace Atomic.Pathfinding.Core
             }
         }
 
-        public async Task<PathResult> GetPathAsync(IAgent agent, (int, int) from, (int, int) to,
+        public async Task<PathResult> GetPathAsync(IAgent agent, Coordinate from, Coordinate to,
             bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
@@ -59,7 +59,7 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
-        public PathResult GetPath(IAgent agent, (int, int) from, (int, int) to, bool postCallbackToAgent = false)
+        public PathResult GetPath(IAgent agent, Coordinate from, Coordinate to, bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
 
@@ -103,7 +103,7 @@ namespace Atomic.Pathfinding.Core
             _locationGrids.Enqueue(grid);
         }
 
-        private PathResult GetPathResult(IAgent agent, LocationGrid grid, (int, int) from, (int, int) to)
+        private PathResult GetPathResult(IAgent agent, LocationGrid grid, Coordinate from, Coordinate to)
         {
             grid.Reset();
 
@@ -171,12 +171,12 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
-        private List<(int, int)> ReconstructPath(Location last)
+        private List<Coordinate> ReconstructPath(Location last)
         {
             if (last == null)
                 return null;
 
-            var list = new List<(int, int)>();
+            var list = new List<Coordinate>();
             Location current = last;
 
             while (current != null)
@@ -188,12 +188,12 @@ namespace Atomic.Pathfinding.Core
             return list;
         }
 
-        private double GetCellWeight((int, int) position)
+        private double GetCellWeight(Coordinate position)
         {
-            return _settings.IsCellWeightEnabled ? _grid.Matrix[position.Y(), position.X()].Weight : 0;
+            return _settings.IsCellWeightEnabled ? _grid.Matrix[position.Y, position.X].Weight : 0;
         }
 
-        private double GetNeighborTravelWeight((int, int) start, (int, int) destination)
+        private double GetNeighborTravelWeight(Coordinate start, Coordinate destination)
         {
             var scoreH = GetScoreH(start, destination);
 
@@ -205,9 +205,9 @@ namespace Atomic.Pathfinding.Core
                 : _settings.DiagonalMovementCost;
         }
 
-        private int GetScoreH((int, int) start, (int, int) destination)
+        private int GetScoreH(Coordinate start, Coordinate destination)
         {
-            return Math.Abs(destination.X() - start.X()) + Math.Abs(destination.Y() - start.Y());
+            return Math.Abs(destination.X - start.X) + Math.Abs(destination.Y - start.Y);
         }
     }
 }

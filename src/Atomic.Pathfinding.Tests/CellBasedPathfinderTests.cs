@@ -37,8 +37,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.CellBasedPathfinder(grid);
 
-            var start = (0, 8);
-            var destination = (8, 2);
+            var start = new Coordinate {X = 0, Y = 8};
+            var destination = new Coordinate {X = 8, Y = 2};
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -75,8 +75,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.CellBasedPathfinder(grid);
 
-            var start = (0, 8);
-            var destination = (8, 2);
+            var start = new Coordinate {X = 0, Y = 8};
+            var destination = new Coordinate {X = 8, Y = 2};
 
             var path = aStar.GetPath(agent, start, destination);
 
@@ -108,8 +108,8 @@ namespace Atomic.Pathfinding.Tests
             var agent = new Agent();
             var aStar = new Core.CellBasedPathfinder(grid);
 
-            var start = (0, 0);
-            var destination = (3, 2);
+            var start = new Coordinate {X = 0, Y = 0};
+            var destination = new Coordinate {X = 3, Y = 2};
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -148,8 +148,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.CellBasedPathfinder(grid, settings);
 
-            var start = (0, 0);
-            var destination = (3, 2);
+            var start = new Coordinate {X = 0, Y = 0};
+            var destination = new Coordinate {X = 3, Y = 2};
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -182,8 +182,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.CellBasedPathfinder(grid, settings);
 
-            var start = (0, 0);
-            var destination = (5, 0);
+            var start = new Coordinate {X = 0, Y = 0};
+            var destination = new Coordinate {X = 5, Y = 0};
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -216,8 +216,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.CellBasedPathfinder(grid, settings);
 
-            var start = (0, 0);
-            var destination = (5, 0);
+            var start = new Coordinate {X = 0, Y = 0};
+            var destination = new Coordinate {X = 5, Y = 0};
 
             var result = aStar.GetPath(agent, start, destination);
 
