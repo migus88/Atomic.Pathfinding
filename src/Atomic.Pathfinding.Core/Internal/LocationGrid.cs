@@ -7,6 +7,17 @@ namespace Atomic.Pathfinding.Core.Internal
 {
     internal class LocationGrid
     {
+        private const int MaxNeighbors = 8;
+
+        private const int LeftNeighborPosition = 0;
+        private const int RightNeighborPosition = 1;
+        private const int UpNeighborPosition = 2;
+        private const int DownNeighborPosition = 3;
+        private const int LeftDownNeighborPosition = 4;
+        private const int LeftUpNeighborPosition = 5;
+        private const int RightDownNeighborPosition = 6;
+        private const int RightUpNeighborPosition = 7;
+        
         public Dictionary<Coordinate, Location> OpenSet { get; private set; } = new Dictionary<Coordinate, Location>();
 
         public Dictionary<Coordinate, Location> ClosedSet { get; private set; } =
@@ -20,6 +31,8 @@ namespace Atomic.Pathfinding.Core.Internal
 
         private readonly int _width;
         private readonly int _height;
+
+        private readonly Location[] _neighbors = new Location[MaxNeighbors];
 
         public LocationGrid(IGrid grid, PathfinderSettings settings)
         {
@@ -35,7 +48,9 @@ namespace Atomic.Pathfinding.Core.Internal
             {
                 for (var y = 0; y < _height; y++)
                 {
-                    _matrix[y, x] = new Location { Position = new Coordinate {X = x, Y = y} };
+                    var location = new Location();
+                    location.SetPosition(new Coordinate {X = x, Y = y});
+                    _matrix[y, x] = location;
                 }
             }
         }
@@ -45,33 +60,47 @@ namespace Atomic.Pathfinding.Core.Internal
             return GetLocation(position.X, position.Y);
         }
 
-
-        //TODO: This method creates garbage. Reuse the result.
-        public List<Location> GetNeighbors(Coordinate position, int agentSize)
+        public Location[] GetNeighbors(Coordinate position, int agentSize)
         {
-            var list = new List<Location>(_settings.IsDiagonalMovementEnabled ? 8 : 4);
-
-            var canGoLeft = PopulateWalkableLocation(ref list, position.X - 1, position.Y, agentSize);
-            var canGoRight = PopulateWalkableLocation(ref list, position.X + 1, position.Y, agentSize);
-            var canGoDown = PopulateWalkableLocation(ref list, position.X, position.Y + 1, agentSize);
-            var canGoUp = PopulateWalkableLocation(ref list, position.X, position.Y - 1, agentSize);
-
-            if (_settings.IsDiagonalMovementEnabled)
+            for (var i = 0; i < _neighbors.Length; i++)
             {
-                if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X - 1, position.Y + 1, agentSize);
-
-                if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X - 1, position.Y - 1, agentSize);
-
-                if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X + 1, position.Y + 1, agentSize);
-
-                if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
-                    PopulateWalkableLocation(ref list, position.X + 1, position.Y - 1, agentSize);
+                _neighbors[i] = null;
             }
 
-            return list;
+            _neighbors[LeftNeighborPosition] = GetWalkableLocation(position.X - 1, position.Y, agentSize);
+            _neighbors[RightNeighborPosition] = GetWalkableLocation(position.X + 1, position.Y, agentSize);
+            _neighbors[DownNeighborPosition] = GetWalkableLocation(position.X, position.Y + 1, agentSize);
+            _neighbors[UpNeighborPosition] = GetWalkableLocation(position.X, position.Y - 1, agentSize);
+
+            var canGoLeft = _neighbors[LeftNeighborPosition] != null;
+            var canGoRight = _neighbors[RightNeighborPosition] != null;
+            var canGoDown = _neighbors[DownNeighborPosition] != null;
+            var canGoUp = _neighbors[UpNeighborPosition] != null;
+
+            if (!_settings.IsDiagonalMovementEnabled) 
+                return _neighbors;
+            
+            if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
+            {
+                _neighbors[LeftDownNeighborPosition] = GetWalkableLocation(position.X - 1, position.Y + 1, agentSize);
+            }
+
+            if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
+            {
+                _neighbors[LeftUpNeighborPosition] = GetWalkableLocation(position.X - 1, position.Y - 1, agentSize);
+            }
+
+            if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
+            {
+                _neighbors[RightDownNeighborPosition] = GetWalkableLocation(position.X + 1, position.Y + 1, agentSize);
+            }
+
+            if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
+            {
+                _neighbors[RightUpNeighborPosition] = GetWalkableLocation(position.X + 1, position.Y - 1, agentSize);
+            }
+
+            return _neighbors;
         }
 
         public void Reset()
@@ -82,16 +111,13 @@ namespace Atomic.Pathfinding.Core.Internal
 
             foreach (var item in _matrix)
             {
-                item.Reset();
+                item?.Reset();
             }
         }
 
         private Location GetLocation(int x, int y)
         {
-            if (!IsPositionValid(x, y))
-                return null;
-
-            return _matrix[y, x];
+            return !IsPositionValid(x, y) ? null : _matrix[y, x];
         }
 
         private Location GetWalkableLocation(int x, int y)
@@ -104,32 +130,31 @@ namespace Atomic.Pathfinding.Core.Internal
             return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable ? null : _matrix[y, x];
         }
 
-        private bool PopulateWalkableLocation(ref List<Location> locations, int x, int y, int agentSize)
+        private Location GetWalkableLocation(int x, int y, int agentSize)
         {
             var location = GetWalkableLocation(x, y);
 
             if (location == null)
             {
-                return false;
+                return null;
             }
 
             //TODO: Implement clearance "baking" for non dinamyc grids
             //Clearance calculation
-            for (int nY = 0; nY < agentSize; nY++)
+            for (var nY = 0; nY < agentSize; nY++)
             {
-                for (int nX = 0; nX < agentSize; nX++)
+                for (var nX = 0; nX < agentSize; nX++)
                 {
                     var neighbor = GetWalkableLocation(x + nX, y + nY);
 
                     if (neighbor == null)
                     {
-                        return false;
+                        return null;
                     }
                 }
             }
-
-            locations.Add(location);
-            return true;
+            
+            return location;
         }
 
         private bool IsPositionValid(int x, int y)

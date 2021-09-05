@@ -18,15 +18,15 @@ namespace Atomic.Pathfinding.Core
     {
         private const double MaxHScoreBetweenNeighbors = 2;
         private const double HScorePerStraightMovement = 1;
-        private const int MaxRetriesToGetGrid = 3;
         private const int MinPreloadedGridsAmount = 1;
 
-        private readonly ConcurrentQueue<LocationGrid> _locationGrids = new ConcurrentQueue<LocationGrid>();
+        private readonly Queue<LocationGrid> _locationGrids = new Queue<LocationGrid>();
 
         private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
 
-        public CellBasedPathfinder(IGrid grid, PathfinderSettings settings = null, int preloadedGridsAmount = MinPreloadedGridsAmount)
+        public CellBasedPathfinder(IGrid grid, PathfinderSettings settings = null,
+            int preloadedGridsAmount = MinPreloadedGridsAmount)
         {
             if (grid?.Matrix == null || grid.Matrix.Length == 0)
                 throw new EmptyGridException();
@@ -80,21 +80,7 @@ namespace Atomic.Pathfinding.Core
                 CreateLocationGrid();
             }
 
-            if (_locationGrids.TryDequeue(out var grid))
-                return grid;
-
-            if (retryCount <= MaxRetriesToGetGrid)
-            {
-                retryCount++;
-                return GetLocationGrid(retryCount);
-            }
-
-            //This exception will probably never be thrown, but potentially this can
-            //happen when multiple client threads access the 'GetPath' method while
-            //there is only one grid left in the queue more times than defined in 'MaxRetriesToGetGrid' const.
-            //Generally it is not a good idea to access this class from different threads. If multithreaded
-            //pathfinding is required, it's better to use the 'GetPathInNewThread' method.
-            throw new LocationGridUnreachableException();
+            return _locationGrids.Dequeue();
         }
 
         private void CreateLocationGrid()
@@ -108,14 +94,16 @@ namespace Atomic.Pathfinding.Core
             grid.Reset();
 
             var start = grid.GetLocation(from);
-            start.ScoreF = GetScoreH(from, to);
+            
+            var scoreF = GetScoreH(from, to);
+            start.SetScoreF(scoreF);
 
             grid.OpenSet.Add(from, start);
 
             while (grid.OpenSet.Count > 0)
             {
                 grid.Current = grid.OpenSet.GetLowestCostLocation();
-
+                
                 if (grid.Current.Position == to)
                 {
                     break;
@@ -128,6 +116,9 @@ namespace Atomic.Pathfinding.Core
 
                 foreach (var neighbor in neighbors)
                 {
+                    if(neighbor == null)
+                        continue;
+                    
                     if (grid.ClosedSet.HasKey(neighbor.Position))
                     {
                         continue;
@@ -142,7 +133,8 @@ namespace Atomic.Pathfinding.Core
                     if (!grid.OpenSet.HasKey(neighbor.Position))
                     {
                         isBestScore = true;
-                        neighbor.ScoreH = GetScoreH(neighbor.Position, to);
+                        var scoreH = GetScoreH(neighbor.Position, to);
+                        neighbor.SetScoreH(scoreH);
                         grid.OpenSet.Add(neighbor.Position, neighbor);
                     }
                     else if (gScore < neighbor.ScoreG)
@@ -152,9 +144,9 @@ namespace Atomic.Pathfinding.Core
 
                     if (isBestScore)
                     {
-                        neighbor.Parent = grid.Current;
-                        neighbor.ScoreG = gScore;
-                        neighbor.ScoreF = neighbor.ScoreG + neighbor.ScoreH;
+                        neighbor.SetParent(grid.Current);
+                        neighbor.SetScoreG(gScore);
+                        neighbor.SetScoreF(neighbor.ScoreG + neighbor.ScoreH);
                     }
                 }
             }

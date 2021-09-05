@@ -4,6 +4,8 @@ namespace Atomic.Pathfinding.Core.Data
 {
     public struct Coordinate : IEquatable<Coordinate>
     {
+        private const int HashMultiplier = 397;
+        
         public int X { get; set; }
         public int Y { get; set; }
 
@@ -31,8 +33,13 @@ namespace Atomic.Pathfinding.Core.Data
         {
             unchecked
             {
-                return (X * 397) ^ Y;
+                return (X * HashMultiplier) ^ Y;
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{X}:{Y}";
         }
     }
 }

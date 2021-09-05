@@ -1,7 +1,12 @@
 ﻿using System;
+using Atomic.Pathfinding.Core.Data;
 
 namespace Atomic.Pathfinding.Core
 {
+    public class LocationNotFoundException : Exception
+    {
+        public LocationNotFoundException(Coordinate coordinate) : base($"Location not found: {coordinate}") { }
+    }
 
     public class EmptyGridException : Exception
     {
