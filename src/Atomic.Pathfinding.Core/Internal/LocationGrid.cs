@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
@@ -52,11 +53,13 @@ namespace Atomic.Pathfinding.Core.Internal
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Location GetLocation(Coordinate position)
         {
-            return GetLocation(position.X, position.Y);
+            return !IsPositionValid(position.X, position.Y) ? null : _matrix[position.Y, position.X];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Location[] GetNeighbors(Coordinate position, int agentSize)
         {
             for (var i = 0; i < _neighbors.Length; i++)
@@ -100,6 +103,7 @@ namespace Atomic.Pathfinding.Core.Internal
             return _neighbors;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             OpenSet.Clear();
@@ -111,11 +115,7 @@ namespace Atomic.Pathfinding.Core.Internal
             }
         }
 
-        private Location GetLocation(int x, int y)
-        {
-            return !IsPositionValid(x, y) ? null : _matrix[y, x];
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Location GetWalkableLocation(int x, int y)
         {
             if (!IsPositionValid(x, y))
@@ -126,6 +126,7 @@ namespace Atomic.Pathfinding.Core.Internal
             return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable ? null : _matrix[y, x];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Location GetWalkableLocation(int x, int y, int agentSize)
         {
             var location = GetWalkableLocation(x, y);
@@ -153,6 +154,7 @@ namespace Atomic.Pathfinding.Core.Internal
             return location;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsPositionValid(int x, int y)
         {
             return x >= 0 && x < _width && y >= 0 && y < _height;

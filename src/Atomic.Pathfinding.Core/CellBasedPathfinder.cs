@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Atomic.Pathfinding.Core.Data;
@@ -44,6 +45,7 @@ namespace Atomic.Pathfinding.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PathResult GetPath(IAgent agent, Coordinate from, Coordinate to, bool postCallbackToAgent = false)
         {
             var grid = GetLocationGrid();
@@ -58,6 +60,7 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private LocationGrid GetLocationGrid()
         {
             if (_locationGrids.Count == 0)
@@ -68,12 +71,14 @@ namespace Atomic.Pathfinding.Core
             return _locationGrids.Dequeue();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateLocationGrid()
         {
             var grid = new LocationGrid(_grid, _settings);
             _locationGrids.Enqueue(grid);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private PathResult GetPathResult(IAgent agent, LocationGrid grid, Coordinate from, Coordinate to)
         {
             grid.Reset();
@@ -146,6 +151,7 @@ namespace Atomic.Pathfinding.Core
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Coordinate[] ReconstructPath(Location last)
         {
             if (last == null)
@@ -162,11 +168,13 @@ namespace Atomic.Pathfinding.Core
             return stack.ToArray();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double GetCellWeight(Coordinate position)
         {
             return _settings.IsCellWeightEnabled ? _grid.Matrix[position.Y, position.X].Weight : 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double GetNeighborTravelWeight(Coordinate start, Coordinate destination)
         {
             var scoreH = GetScoreH(start, destination);
@@ -179,6 +187,7 @@ namespace Atomic.Pathfinding.Core
                 : _settings.DiagonalMovementCost;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetScoreH(Coordinate start, Coordinate destination)
         {
             return Math.Abs(destination.X - start.X) + Math.Abs(destination.Y - start.Y);

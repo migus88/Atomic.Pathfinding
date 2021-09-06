@@ -1,4 +1,5 @@
-﻿using Atomic.Pathfinding.Core.Data;
+﻿using System.Runtime.CompilerServices;
+using Atomic.Pathfinding.Core.Data;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
@@ -12,6 +13,7 @@ namespace Atomic.Pathfinding.Core.Internal
         public double ScoreG { get; private set; }
         public Location Parent { get; private set; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             ScoreF = 0;
@@ -21,26 +23,31 @@ namespace Atomic.Pathfinding.Core.Internal
             IsClosed = false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPosition(Coordinate position)
         {
             Position = position;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScoreF(double scoreF)
         {
             ScoreF = scoreF;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScoreH(double scoreH)
         {
             ScoreH = scoreH;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScoreG(double scoreG)
         {
             ScoreG = scoreG;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetParent(Location parent)
         {
             Parent = parent;
