@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 
 namespace Atomic.Pathfinding.Benchmark.Allocation
@@ -7,6 +8,23 @@ namespace Atomic.Pathfinding.Benchmark.Allocation
     {
         private const int Columns = 100;
         private const int Rows = 100;
+
+        [Benchmark]
+        public void ManyStructsInStruct()
+        {
+            var amount = Columns * Rows;
+
+            var holder = new StructStructsHolder(amount);
+        }
+        
+
+        [Benchmark]
+        public void ManyStructsInClass()
+        {
+            var amount = Columns * Rows;
+
+            var holder = new ClassStructsHolder(amount);
+        }
 
         [Benchmark]
         public void TestStructHolder()
@@ -68,6 +86,38 @@ namespace Atomic.Pathfinding.Benchmark.Allocation
                 var retrieved = item;
                 var x = item.X;
                 var y = item.Y;
+            }
+        }
+
+        private struct StructStructsHolder
+        {
+            public List<BasicStruct> Structs { get; set; }
+
+            public StructStructsHolder(int amount)
+            {
+                Structs = new List<BasicStruct>(amount);
+                
+                for (int i = 0; i < amount; i++)
+                {
+                    var s = new BasicStruct(1, 1);
+                    Structs.Add(s);
+                }
+            }
+        }
+
+        private class ClassStructsHolder
+        {
+            public List<BasicStruct> Structs { get; set; }
+
+            public ClassStructsHolder(int amount)
+            {
+                Structs = new List<BasicStruct>(amount);
+                
+                for (int i = 0; i < amount; i++)
+                {
+                    var s = new BasicStruct(1, 1);
+                    Structs.Add(s);
+                }
             }
         }
 
