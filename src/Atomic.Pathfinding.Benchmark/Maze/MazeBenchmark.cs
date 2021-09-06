@@ -15,7 +15,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     {
         private IGridCell[,] _matrix;
         private IGrid _grid;
-        private CellBasedPathfinder _pathfinder;
+        private Pathfinder _pathfinder;
         private short _width;
         private short _height;
         private IAgent _agent;
@@ -45,7 +45,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             }
 
             _grid = new ClassCellBasedGrid(_matrix);
-            _pathfinder = new CellBasedPathfinder(_grid);
+            _pathfinder = new Pathfinder(_grid);
         }
 
         [Benchmark]

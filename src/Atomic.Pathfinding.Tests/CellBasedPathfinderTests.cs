@@ -36,7 +36,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 2
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid);
+            var aStar = new Core.Pathfinder(grid);
 
             var start = new Coordinate {X = 0, Y = 8};
             var destination = new Coordinate {X = 8, Y = 2};
@@ -74,7 +74,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 3
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid);
+            var aStar = new Core.Pathfinder(grid);
 
             var start = new Coordinate {X = 0, Y = 8};
             var destination = new Coordinate {X = 8, Y = 2};
@@ -107,7 +107,7 @@ namespace Atomic.Pathfinding.Tests
 
             var grid = new Grid(matrix);
             var agent = new Agent();
-            var aStar = new Core.CellBasedPathfinder(grid);
+            var aStar = new Core.Pathfinder(grid);
 
             var start = new Coordinate {X = 0, Y = 0};
             var destination = new Coordinate {X = 3, Y = 2};
@@ -147,7 +147,7 @@ namespace Atomic.Pathfinding.Tests
                 IsMovementBetweenCornersEnabled = true
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid, settings);
+            var aStar = new Core.Pathfinder(grid, settings);
 
             var start = new Coordinate {X = 0, Y = 0};
             var destination = new Coordinate {X = 3, Y = 2};
@@ -181,7 +181,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = true
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid, settings);
+            var aStar = new Core.Pathfinder(grid, settings);
 
             var start = new Coordinate {X = 0, Y = 0};
             var destination = new Coordinate {X = 5, Y = 0};
@@ -221,7 +221,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid, settings);
+            var aStar = new Core.Pathfinder(grid, settings);
 
             var start = new Coordinate {X = 0, Y = 0};
             var destination = new Coordinate {X = 5, Y = 0};
@@ -257,7 +257,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Core.CellBasedPathfinder(grid, settings);
+            var aStar = new Core.Pathfinder(grid, settings);
 
             var start = new Coordinate {X = 0, Y = 0};
             var destination = new Coordinate {X = 99, Y = 99};

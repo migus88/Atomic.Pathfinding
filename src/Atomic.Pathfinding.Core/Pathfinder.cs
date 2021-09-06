@@ -16,7 +16,7 @@ namespace Atomic.Pathfinding.Core
     /// Finds path in a cell based environment. <br/>
     /// Ideal for situations with limited amount of cells
     /// </summary>
-    public class CellBasedPathfinder
+    public class Pathfinder
     {
         private const double MaxHScoreBetweenNeighbors = 2;
         private const int MinPreloadedGridsAmount = 1;
@@ -28,7 +28,7 @@ namespace Atomic.Pathfinding.Core
         private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
 
-        public CellBasedPathfinder(IGrid grid, PathfinderSettings settings = null,
+        public Pathfinder(IGrid grid, PathfinderSettings settings = null,
             int preloadedGridsAmount = MinPreloadedGridsAmount)
         {
             if (grid?.Matrix == null || grid.Matrix.Length == 0)

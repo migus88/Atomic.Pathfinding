@@ -17,8 +17,8 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         private IGrid _classGrid;
         private IGrid _structGrid;
 
-        private CellBasedPathfinder _classPathfinder;
-        private CellBasedPathfinder _structPathfinder;
+        private Pathfinder _classPathfinder;
+        private Pathfinder _structPathfinder;
 
         private IAgent _agent = new Agent();
 
@@ -36,8 +36,8 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             _classGrid = new ClassCellBasedGrid(_classMatrix);
             _structGrid = new StructCellBasedGrid(_structsMatrix);
 
-            _classPathfinder = new CellBasedPathfinder(_classGrid);
-            _structPathfinder = new CellBasedPathfinder(_structGrid);
+            _classPathfinder = new Pathfinder(_classGrid);
+            _structPathfinder = new Pathfinder(_structGrid);
         }
 
         [Benchmark]
@@ -81,13 +81,13 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         [Benchmark]
         public void ClassPathfinderCreation()
         {
-            var pathfinder = new CellBasedPathfinder(_classGrid);
+            var pathfinder = new Pathfinder(_classGrid);
         }
         
         [Benchmark]
         public void StructPathfinderCreation()
         {
-            var pathfinder = new CellBasedPathfinder(_structGrid);
+            var pathfinder = new Pathfinder(_structGrid);
         }
 
         [Benchmark]
