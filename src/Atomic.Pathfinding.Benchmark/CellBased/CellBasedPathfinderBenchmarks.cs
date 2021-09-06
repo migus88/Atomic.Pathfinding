@@ -12,13 +12,10 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         private const int GridHeight = 100;
 
         private IGridCell[,] _classMatrix = new IGridCell[GridWidth, GridHeight];
-        private IGridCell[,] _structsMatrix = new IGridCell[GridWidth, GridHeight];
 
         private IGrid _classGrid;
-        private IGrid _structGrid;
 
         private Pathfinder _classPathfinder;
-        private Pathfinder _structPathfinder;
 
         private IAgent _agent = new Agent();
 
@@ -29,15 +26,12 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
                 for (var j = 0; j < GridWidth; j++)
                 {
                     _classMatrix[j, i] = new ClassCellBasedGrid.GridCell();
-                    _structsMatrix[j, i] = new StructCellBasedGrid.GridCell(true, false, 0);
                 }
             }
 
             _classGrid = new ClassCellBasedGrid(_classMatrix);
-            _structGrid = new StructCellBasedGrid(_structsMatrix);
 
             _classPathfinder = new Pathfinder(_classGrid);
-            _structPathfinder = new Pathfinder(_structGrid);
         }
 
         [Benchmark]
@@ -54,40 +48,15 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         }
 
         [Benchmark]
-        public void StructMatrixCreation()
-        {
-            var matrix = new IGridCell[GridWidth, GridHeight];
-            for (var i = 0; i < GridHeight; i++)
-            {
-                for (var j = 0; j < GridWidth; j++)
-                {
-                    matrix[j, i] = new StructCellBasedGrid.GridCell(true, false, 0);
-                }
-            }
-        }
-
-        [Benchmark]
         public void ClassGridCreation()
         {
             var grid = new ClassCellBasedGrid(_classMatrix);
         }
 
         [Benchmark]
-        public void StructGridCreation()
-        {
-            var grid = new ClassCellBasedGrid(_structsMatrix);
-        }
-
-        [Benchmark]
         public void ClassPathfinderCreation()
         {
             var pathfinder = new Pathfinder(_classGrid);
-        }
-        
-        [Benchmark]
-        public void StructPathfinderCreation()
-        {
-            var pathfinder = new Pathfinder(_structGrid);
         }
 
         [Benchmark]
@@ -97,15 +66,6 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             var end = new Coordinate {X = GridWidth - 1, Y = GridHeight - 1};
 
             var result = _classPathfinder.GetPath(_agent, start, end);
-        }
-
-        [Benchmark]
-        public void StructGridPathfinding()
-        {
-            var start = new Coordinate {X = 0, Y = 0};
-            var end = new Coordinate {X = GridWidth - 1, Y = GridHeight - 1};
-
-            var result = _structPathfinder.GetPath(_agent, start, end);
         }
     }
 }
