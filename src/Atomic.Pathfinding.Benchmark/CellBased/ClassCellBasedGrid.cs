@@ -17,7 +17,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         {
             public bool IsWalkable { get; set; } = true;
             public bool IsOccupied { get; set; } = false;
-            public double Weight { get; set; } = 0;
+            public float Weight { get; set; } = 0;
         }
     }
 }

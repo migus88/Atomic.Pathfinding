@@ -8,14 +8,26 @@ namespace Atomic.Pathfinding.Core.Internal
         public bool IsClosed;
         
         public Coordinate Position { get; set; }
-        public double ScoreF { get; set; }
-        public double ScoreH { get; set; }
-        public double ScoreG { get; set; }
-        public Location Parent { get; set; }
+        public float ScoreF { get; set; }
+        public float ScoreH { get; set; }
+        public float ScoreG { get; set; }
+
+        public Location Parent
+        {
+            get => _parent;
+            set
+            {
+                _parent = value;
+                Depth = _parent?.Depth + 1 ?? 1;
+            }
+        }
+        public int Depth { get; private set; }
+
+        private Location _parent;
 
 
         public int QueueIndex { get; set; }
-        public double Priority
+        public float Priority
         {
             get => ScoreF;
             set => ScoreF = value;

@@ -9,8 +9,11 @@ namespace Atomic.Pathfinding.Benchmark
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<MazeBenchmark>();
-            //BenchmarkRunner.Run<CellBasedPathfinderBenchmarks>();
+            // var b = new MazeBenchmark();
+            // b.Find();
+            
+            // BenchmarkRunner.Run<MazeBenchmark>();
+            BenchmarkRunner.Run<CellBasedPathfinderBenchmarks>();
         }
     }
 }

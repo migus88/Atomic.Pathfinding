@@ -16,8 +16,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         private IGridCell[,] _matrix;
         private IGrid _grid;
         private CellBasedPathfinder _pathfinder;
-        private int _width;
-        private int _height;
+        private short _width;
+        private short _height;
         private IAgent _agent;
         private IEnumerable<Coordinate> _path;
         private Coordinate _start;
@@ -27,8 +27,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         public MazeBenchmark()
         {
             var image = (Bitmap) Image.FromFile("cavern.gif");
-            _width = image.Width;
-            _height = image.Height;
+            _width = (short)image.Width;
+            _height = (short)image.Height;
             _agent = new Agent();
 
             _matrix = new IGridCell[_height, _width];
@@ -52,7 +52,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         public void Find()
         {
             _start = new Coordinate {X = 10, Y = 10};
-            _destination =  new Coordinate {X = _width - 10, Y = _height - 10};
+            _destination =  new Coordinate {X = (short)(_width - 10), Y = (short)(_height - 10)};
             var result = _pathfinder.GetPath(_agent, _start, _destination);
             _path = result.Path;
         }

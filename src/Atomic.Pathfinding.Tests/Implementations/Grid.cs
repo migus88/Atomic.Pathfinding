@@ -99,7 +99,7 @@ namespace Atomic.Pathfinding.Tests.Implementations
         public bool IsWalkable { get; set; }
         public bool IsOccupied { get; set; }
         public bool IsPath { get; set; }
-        public double Weight { get; set; }
+        public float Weight { get; set; }
 
         public static GridCell _ => new GridCell { IsWalkable = true, IsOccupied = false, Weight = 0 };
         public static GridCell a => new GridCell { IsWalkable = true, IsOccupied = false, Weight = 1 };

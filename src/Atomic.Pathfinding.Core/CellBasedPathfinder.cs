@@ -114,8 +114,6 @@ namespace Atomic.Pathfinding.Core
                                  + GetNeighborTravelWeight(grid.Current.Position, neighbor.Position)
                                  + GetCellWeight(neighbor.Position);
 
-                    var priority = scoreG;
-
                     if (!grid.OpenSet.Contains(neighbor))
                     {
                         neighbor.Parent = grid.Current;
@@ -153,7 +151,7 @@ namespace Atomic.Pathfinding.Core
             if (last == null)
                 return null;
 
-            var stack = new Stack<Coordinate>();
+            var stack = new Stack<Coordinate>(last.Depth);
 
             while (last != null)
             {
@@ -165,13 +163,13 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double GetCellWeight(Coordinate position)
+        private float GetCellWeight(Coordinate position)
         {
             return _settings.IsCellWeightEnabled ? _grid.Matrix[position.Y, position.X].Weight : 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double GetNeighborTravelWeight(Coordinate start, Coordinate destination)
+        private float GetNeighborTravelWeight(Coordinate start, Coordinate destination)
         {
             var scoreH = GetScoreH(start, destination);
 

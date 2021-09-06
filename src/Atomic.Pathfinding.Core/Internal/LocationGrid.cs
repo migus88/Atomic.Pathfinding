@@ -42,9 +42,9 @@ namespace Atomic.Pathfinding.Core.Internal
 
             _matrix = new Location[_height, _width];
 
-            for (var x = 0; x < _width; x++)
+            for (short x = 0; x < _width; x++)
             {
-                for (var y = 0; y < _height; y++)
+                for (short y = 0; y < _height; y++)
                 {
                     var location = new Location
                     {

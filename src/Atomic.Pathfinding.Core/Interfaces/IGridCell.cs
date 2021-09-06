@@ -16,6 +16,6 @@
         /// we can decide that the climb is more difficult and we can<br/>
         /// assign a higher value to this cell.
         /// </summary>
-        double Weight { get; }
+        float Weight { get; }
     }
 }

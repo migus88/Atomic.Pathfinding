@@ -6,8 +6,8 @@ namespace Atomic.Pathfinding.Core.Data
     {
         private const int HashMultiplier = 397;
         
-        public int X { get; set; }
-        public int Y { get; set; }
+        public short X { get; set; }
+        public short Y { get; set; }
 
         public static bool operator ==(Coordinate left, Coordinate right)
         {

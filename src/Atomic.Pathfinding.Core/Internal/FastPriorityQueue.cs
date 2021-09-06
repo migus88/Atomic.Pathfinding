@@ -19,7 +19,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Enqueue(T item, double priority)
+        public void Enqueue(T item, float priority)
         {
             item.Priority = priority;
             Count++;
@@ -52,7 +52,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UpdatePriority(T item, double priority)
+        public void UpdatePriority(T item, float priority)
         {
             item.Priority = priority;
             OnItemUpdated(item);
@@ -284,7 +284,7 @@ namespace Atomic.Pathfinding.Core.Internal
 
     public interface IPriorityProvider
     {
-        double Priority { get; set; }
+        float Priority { get; set; }
         int QueueIndex { get; set; }
     }
 }
