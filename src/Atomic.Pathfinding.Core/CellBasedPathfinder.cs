@@ -118,19 +118,19 @@ namespace Atomic.Pathfinding.Core
 
                     if (!grid.OpenSet.Contains(neighbor))
                     {
-                        neighbor.SetParent(grid.Current);
-                        neighbor.SetScoreG(scoreG);
+                        neighbor.Parent = grid.Current;
+                        neighbor.ScoreG = scoreG;
                         
                         var scoreH = GetScoreH(neighbor.Position, to);
-                        neighbor.SetScoreH(scoreH);
+                        neighbor.ScoreH = scoreH;
                         
                         grid.OpenSet.Enqueue(neighbor, neighbor.ScoreG + neighbor.ScoreH);
                     }
                     else if (scoreG + neighbor.ScoreH < neighbor.ScoreF)
                     {
-                        neighbor.SetScoreG(scoreG);
-                        neighbor.SetScoreF(neighbor.ScoreG + neighbor.ScoreH);
-                        neighbor.SetParent(grid.Current);
+                        neighbor.ScoreG = scoreG;
+                        neighbor.ScoreF = neighbor.ScoreG + neighbor.ScoreH;
+                        neighbor.Parent = grid.Current;
                     }
                 }
             }

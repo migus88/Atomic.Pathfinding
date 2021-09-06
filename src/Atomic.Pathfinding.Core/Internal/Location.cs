@@ -5,20 +5,20 @@ namespace Atomic.Pathfinding.Core.Internal
 {
     internal class Location : IPriorityProvider
     {
-        public bool IsClosed { get; set; }
+        public bool IsClosed;
         
-        public Coordinate Position { get; private set; }
-        public double ScoreF { get; private set; }
-        public double ScoreH { get; private set; }
-        public double ScoreG { get; private set; }
-        public Location Parent { get; private set; }
+        public Coordinate Position { get; set; }
+        public double ScoreF { get; set; }
+        public double ScoreH { get; set; }
+        public double ScoreG { get; set; }
+        public Location Parent { get; set; }
 
 
         public int QueueIndex { get; set; }
         public double Priority
         {
             get => ScoreF;
-            set => SetScoreF(value);
+            set => ScoreF = value;
         }
         
 
@@ -30,36 +30,6 @@ namespace Atomic.Pathfinding.Core.Internal
             ScoreH = 0;
             Parent = null;
             IsClosed = false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPosition(Coordinate position)
-        {
-            Position = position;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetScoreF(double scoreF)
-        {
-            ScoreF = scoreF;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetScoreH(double scoreH)
-        {
-            ScoreH = scoreH;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetScoreG(double scoreG)
-        {
-            ScoreG = scoreG;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetParent(Location parent)
-        {
-            Parent = parent;
         }
     }
 }

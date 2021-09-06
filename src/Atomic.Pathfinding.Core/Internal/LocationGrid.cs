@@ -46,8 +46,10 @@ namespace Atomic.Pathfinding.Core.Internal
             {
                 for (var y = 0; y < _height; y++)
                 {
-                    var location = new Location();
-                    location.SetPosition(new Coordinate {X = x, Y = y});
+                    var location = new Location
+                    {
+                        Position = new Coordinate {X = x, Y = y}
+                    };
                     _matrix[y, x] = location;
                 }
             }
@@ -77,8 +79,10 @@ namespace Atomic.Pathfinding.Core.Internal
             var canGoDown = _neighbors[DownNeighborPosition] != null;
             var canGoUp = _neighbors[UpNeighborPosition] != null;
 
-            if (!_settings.IsDiagonalMovementEnabled) 
+            if (!_settings.IsDiagonalMovementEnabled)
+            {
                 return _neighbors;
+            }
             
             if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
             {
