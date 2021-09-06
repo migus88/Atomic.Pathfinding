@@ -18,8 +18,9 @@ namespace Atomic.Pathfinding.Core
     public class CellBasedPathfinder
     {
         private const double MaxHScoreBetweenNeighbors = 2;
-        private const double HScorePerStraightMovement = 1;
         private const int MinPreloadedGridsAmount = 1;
+        private const double CostTolerance = 0.01;
+        
 
         private readonly Queue<LocationGrid> _locationGrids = new Queue<LocationGrid>();
 
@@ -86,13 +87,11 @@ namespace Atomic.Pathfinding.Core
             var start = grid.GetLocation(from);
             
             var scoreF = GetScoreH(from, to);
-            start.SetScoreF(scoreF);
-
-            grid.OpenSet.Add(start);
+            grid.OpenSet.Enqueue(start, scoreF);
 
             while (grid.OpenSet.Count > 0)
             {
-                grid.Current = grid.OpenSet.GetLowestCostLocation();
+                grid.Current = grid.OpenSet.Dequeue();
                 
                 if (grid.Current.Position == to)
                 {
@@ -100,8 +99,6 @@ namespace Atomic.Pathfinding.Core
                 }
 
                 grid.Current.IsClosed = true;
-
-                grid.OpenSet.Remove(grid.Current);
 
                 var neighbors = grid.GetNeighbors(grid.Current.Position, agent.Size);
 
@@ -112,29 +109,27 @@ namespace Atomic.Pathfinding.Core
                         continue;
                     }
 
-                    var gScore = grid.Current.ScoreG
+                    var scoreG = grid.Current.ScoreG
                                  + GetNeighborTravelWeight(grid.Current.Position, neighbor.Position)
                                  + GetCellWeight(neighbor.Position);
 
-                    var isBestScore = false;
+                    var priority = scoreG;
 
-                    if (!grid.OpenSet.HasKey(neighbor))
-                    {
-                        isBestScore = true;
-                        var scoreH = GetScoreH(neighbor.Position, to);
-                        neighbor.SetScoreH(scoreH);
-                        grid.OpenSet.Add(neighbor);
-                    }
-                    else if (gScore < neighbor.ScoreG)
-                    {
-                        isBestScore = true;
-                    }
-
-                    if (isBestScore)
+                    if (!grid.OpenSet.Contains(neighbor))
                     {
                         neighbor.SetParent(grid.Current);
-                        neighbor.SetScoreG(gScore);
+                        neighbor.SetScoreG(scoreG);
+                        
+                        var scoreH = GetScoreH(neighbor.Position, to);
+                        neighbor.SetScoreH(scoreH);
+                        
+                        grid.OpenSet.Enqueue(neighbor, neighbor.ScoreG + neighbor.ScoreH);
+                    }
+                    else if (scoreG + neighbor.ScoreH < neighbor.ScoreF)
+                    {
+                        neighbor.SetScoreG(scoreG);
                         neighbor.SetScoreF(neighbor.ScoreG + neighbor.ScoreH);
+                        neighbor.SetParent(grid.Current);
                     }
                 }
             }
@@ -182,7 +177,7 @@ namespace Atomic.Pathfinding.Core
             if (scoreH > MaxHScoreBetweenNeighbors)
                 throw new Exception("Can travel only to neighbors");
 
-            return Math.Abs(scoreH - HScorePerStraightMovement) < 0.01
+            return Math.Abs(scoreH - _settings.StraightMovementCost) < CostTolerance
                 ? _settings.StraightMovementCost
                 : _settings.DiagonalMovementCost;
         }

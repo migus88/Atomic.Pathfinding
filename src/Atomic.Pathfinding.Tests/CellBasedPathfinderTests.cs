@@ -193,7 +193,13 @@ namespace Atomic.Pathfinding.Tests
             grid.UpdatePath(result.Path);
             Console.WriteLine(grid);
 
-            Assert.IsFalse(((GridCell) grid.Matrix[0, 1]).IsPath);
+            foreach (var cell in grid.Matrix)
+            {
+                if (cell.Weight > 0)
+                {
+                    Assert.IsFalse(((GridCell)cell).IsPath);
+                }
+            }
         }
 
 

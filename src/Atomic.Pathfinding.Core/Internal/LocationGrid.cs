@@ -19,7 +19,7 @@ namespace Atomic.Pathfinding.Core.Internal
         private const int RightDownNeighborPosition = 6;
         private const int RightUpNeighborPosition = 7;
         
-        public HashSet<Location> OpenSet { get; private set; } = new HashSet<Location>();
+        public FastPriorityQueue<Location> OpenSet { get; private set; } = new FastPriorityQueue<Location>();
 
         public Location Current { get; set; } = null;
 

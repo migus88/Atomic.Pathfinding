@@ -3,7 +3,7 @@ using Atomic.Pathfinding.Core.Data;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
-    internal class Location
+    internal class Location : IPriorityProvider
     {
         public bool IsClosed { get; set; }
         
@@ -12,6 +12,15 @@ namespace Atomic.Pathfinding.Core.Internal
         public double ScoreH { get; private set; }
         public double ScoreG { get; private set; }
         public Location Parent { get; private set; }
+
+
+        public int QueueIndex { get; set; }
+        public double Priority
+        {
+            get => ScoreF;
+            set => SetScoreF(value);
+        }
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()

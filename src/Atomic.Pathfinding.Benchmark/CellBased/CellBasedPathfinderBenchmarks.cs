@@ -40,7 +40,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             _structPathfinder = new CellBasedPathfinder(_structGrid);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void ClassMatrixCreation()
         {
             var matrix = new IGridCell[GridWidth, GridHeight];
@@ -53,7 +53,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void StructMatrixCreation()
         {
             var matrix = new IGridCell[GridWidth, GridHeight];
@@ -66,25 +66,25 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void ClassGridCreation()
         {
             var grid = new ClassCellBasedGrid(_classMatrix);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void StructGridCreation()
         {
             var grid = new ClassCellBasedGrid(_structsMatrix);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void ClassPathfinderCreation()
         {
             var pathfinder = new CellBasedPathfinder(_classGrid);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void StructPathfinderCreation()
         {
             var pathfinder = new CellBasedPathfinder(_structGrid);
