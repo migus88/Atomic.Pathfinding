@@ -38,8 +38,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid);
 
-            var start = new Coordinate {X = 0, Y = 8};
-            var destination = new Coordinate {X = 8, Y = 2};
+            var start = new Coordinate(0, 8);
+            var destination = new Coordinate(8, 2);
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -76,8 +76,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid);
 
-            var start = new Coordinate {X = 0, Y = 8};
-            var destination = new Coordinate {X = 8, Y = 2};
+            var start = new Coordinate(0, 8);
+            var destination = new Coordinate(8, 2);
 
             var path = aStar.GetPath(agent, start, destination);
 
@@ -109,8 +109,8 @@ namespace Atomic.Pathfinding.Tests
             var agent = new Agent();
             var aStar = new Core.Pathfinder(grid);
 
-            var start = new Coordinate {X = 0, Y = 0};
-            var destination = new Coordinate {X = 3, Y = 2};
+            var start = new Coordinate(0, 0);
+            var destination = new Coordinate(3, 2);
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -149,8 +149,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid, settings);
 
-            var start = new Coordinate {X = 0, Y = 0};
-            var destination = new Coordinate {X = 3, Y = 2};
+            var start = new Coordinate(0, 0);
+            var destination = new Coordinate(3, 2);
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -183,8 +183,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid, settings);
 
-            var start = new Coordinate {X = 0, Y = 0};
-            var destination = new Coordinate {X = 5, Y = 0};
+            var start = new Coordinate(0, 0);
+            var destination = new Coordinate(5, 0);
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -197,7 +197,7 @@ namespace Atomic.Pathfinding.Tests
             {
                 if (cell.Weight > 0)
                 {
-                    Assert.IsFalse(((GridCell)cell).IsPath);
+                    Assert.IsFalse(((GridCell) cell).IsPath);
                 }
             }
         }
@@ -223,8 +223,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid, settings);
 
-            var start = new Coordinate {X = 0, Y = 0};
-            var destination = new Coordinate {X = 5, Y = 0};
+            var start = new Coordinate(0, 0);
+            var destination = new Coordinate(5, 0);
 
             var result = aStar.GetPath(agent, start, destination);
 
@@ -235,11 +235,11 @@ namespace Atomic.Pathfinding.Tests
 
             Assert.IsTrue(((GridCell) grid.Matrix[0, 1]).IsPath);
         }
-        
+
         [Test]
         public void BasicDiagonalPath_Test()
         {
-            var matrix = new GridCell[100,100];
+            var matrix = new GridCell[100, 100];
 
             for (int i = 0; i < 100; i++)
             {
@@ -259,8 +259,8 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new Core.Pathfinder(grid, settings);
 
-            var start = new Coordinate {X = 0, Y = 0};
-            var destination = new Coordinate {X = 99, Y = 99};
+            var start = new Coordinate(0, 0);
+            var destination = new Coordinate(99, 99);
 
             var result = aStar.GetPath(agent, start, destination);
 

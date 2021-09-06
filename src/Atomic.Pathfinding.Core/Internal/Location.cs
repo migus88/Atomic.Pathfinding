@@ -5,12 +5,20 @@ namespace Atomic.Pathfinding.Core.Internal
 {
     internal class Location : IPriorityProvider
     {
-        public bool IsClosed;
+        public bool IsClosed { get; set; }
         
-        public Coordinate Position { get; set; }
+        public Coordinate Position { get; }
         public float ScoreF { get; set; }
         public float ScoreH { get; set; }
         public float ScoreG { get; set; }
+        public int Depth { get; private set; }
+
+        public int QueueIndex { get; set; }
+        public float Priority
+        {
+            get => ScoreF;
+            set => ScoreF = value;
+        }
 
         public Location Parent
         {
@@ -21,16 +29,18 @@ namespace Atomic.Pathfinding.Core.Internal
                 Depth = _parent?.Depth + 1 ?? 1;
             }
         }
-        public int Depth { get; private set; }
-
+        
+        
         private Location _parent;
 
-
-        public int QueueIndex { get; set; }
-        public float Priority
+        public Location(Coordinate position)
         {
-            get => ScoreF;
-            set => ScoreF = value;
+            Position = position;
+        }
+
+        public Location(short x, short y)
+        {
+            Position = new Coordinate(x, y);
         }
         
 

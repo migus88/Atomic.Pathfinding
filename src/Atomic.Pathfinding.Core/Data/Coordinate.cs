@@ -9,6 +9,12 @@ namespace Atomic.Pathfinding.Core.Data
         public short X { get; set; }
         public short Y { get; set; }
 
+        public Coordinate(short x, short y)
+        {
+            X = x;
+            Y = y;
+        }
+
         public static bool operator ==(Coordinate left, Coordinate right)
         {
             return left.Equals(right);

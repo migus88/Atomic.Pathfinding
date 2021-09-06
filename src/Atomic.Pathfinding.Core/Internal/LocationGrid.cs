@@ -48,11 +48,7 @@ namespace Atomic.Pathfinding.Core.Internal
             {
                 for (short y = 0; y < _height; y++)
                 {
-                    var location = new Location
-                    {
-                        Position = new Coordinate {X = x, Y = y}
-                    };
-                    _matrix[y, x] = location;
+                    _matrix[y, x] = new Location(x, y);
                 }
             }
         }

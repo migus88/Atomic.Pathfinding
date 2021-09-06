@@ -62,8 +62,8 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         [Benchmark]
         public void ClassGridPathfinding()
         {
-            var start = new Coordinate {X = 0, Y = 0};
-            var end = new Coordinate {X = GridWidth - 1, Y = GridHeight - 1};
+            var start = new Coordinate(0, 0);
+            var end = new Coordinate(GridWidth - 1, GridHeight - 1);
 
             var result = _classPathfinder.GetPath(_agent, start, end);
         }

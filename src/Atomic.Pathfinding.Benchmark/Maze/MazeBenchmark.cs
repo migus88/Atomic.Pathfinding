@@ -51,8 +51,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         [Benchmark]
         public void Find()
         {
-            _start = new Coordinate {X = 10, Y = 10};
-            _destination =  new Coordinate {X = (short)(_width - 10), Y = (short)(_height - 10)};
+            _start = new Coordinate(10,10);
+            _destination =  new Coordinate((short)(_width - 10),(short)(_height - 10));
             var result = _pathfinder.GetPath(_agent, _start, _destination);
             _path = result.Path;
         }
