@@ -19,7 +19,7 @@ namespace Atomic.Pathfinding.Core.Internal
         private const int RightDownNeighborPosition = 6;
         private const int RightUpNeighborPosition = 7;
         
-        public FastPriorityQueue<Location> OpenSet { get; private set; } = new FastPriorityQueue<Location>();
+        public FastPriorityQueue<Location> OpenSet { get; }
 
         public Location Current { get; set; } = null;
 
@@ -34,6 +34,8 @@ namespace Atomic.Pathfinding.Core.Internal
 
         public LocationGrid(IGrid grid, PathfinderSettings settings)
         {
+            OpenSet = new FastPriorityQueue<Location>(settings.MaxOpenSetCapacity);
+            
             _grid = grid;
             _settings = settings;
 
