@@ -51,7 +51,7 @@ namespace Atomic.Pathfinding.Tests.Implementations
             return builder.ToString();
         }
 
-        public void UpdatePath(Coordinate[] path)
+        public void UpdatePath(IEnumerable<Coordinate> path)
         {
             var matrix = Matrix as GridCell[,];
 

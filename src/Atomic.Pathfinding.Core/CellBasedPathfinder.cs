@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -147,7 +148,7 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate[] ReconstructPath(Location last)
+        private IEnumerable<Coordinate> ReconstructPath(Location last)
         {
             if (last == null)
                 return null;
@@ -160,7 +161,7 @@ namespace Atomic.Pathfinding.Core
                 last = last.Parent;
             }
 
-            return stack.ToArray();
+            return stack.AsEnumerable();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

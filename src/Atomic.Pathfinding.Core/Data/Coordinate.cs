@@ -2,7 +2,7 @@ using System;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public struct Coordinate : IEquatable<Coordinate>
+    public class Coordinate : IEquatable<Coordinate>
     {
         private const int HashMultiplier = 397;
         

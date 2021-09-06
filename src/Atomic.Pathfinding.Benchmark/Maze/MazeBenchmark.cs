@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         private int _width;
         private int _height;
         private IAgent _agent;
-        private Coordinate[] _path;
+        private IEnumerable<Coordinate> _path;
         private Coordinate _start;
         private Coordinate _destination;
 
