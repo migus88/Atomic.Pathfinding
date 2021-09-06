@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
+    //This class is an adaptation of a class from this repository:
+    //https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
     public class FastPriorityQueue<T> where T : class, IPriorityProvider
     {
         public int Count { get; private set; }
@@ -12,7 +14,7 @@ namespace Atomic.Pathfinding.Core.Internal
         private readonly T[] _collection;
         private double? _lowestPriority = null;
 
-        public FastPriorityQueue(int maxNodes = 10000)
+        public FastPriorityQueue(int maxNodes)
         {
             Count = 0;
             _collection = new T[maxNodes];
@@ -75,12 +77,12 @@ namespace Atomic.Pathfinding.Core.Internal
         private void CascadeUp(T item)
         {
             //aka Heapify-up
-            int parent;
+            int parentIndex;
 
             if (item.QueueIndex > 1)
             {
-                parent = item.QueueIndex >> 1;
-                var parentNode = _collection[parent];
+                parentIndex = item.QueueIndex >> 1;
+                var parentNode = _collection[parentIndex];
 
                 if (HasHigherOrEqualPriority(parentNode, item))
                     return;
@@ -89,17 +91,17 @@ namespace Atomic.Pathfinding.Core.Internal
                 _collection[item.QueueIndex] = parentNode;
                 parentNode.QueueIndex = item.QueueIndex;
 
-                item.QueueIndex = parent;
+                item.QueueIndex = parentIndex;
             }
             else
             {
                 return;
             }
 
-            while (parent > 1)
+            while (parentIndex > 1)
             {
-                parent >>= 1;
-                var parentNode = _collection[parent];
+                parentIndex >>= 1;
+                var parentNode = _collection[parentIndex];
 
                 if (HasHigherOrEqualPriority(parentNode, item))
                     break;
@@ -108,7 +110,7 @@ namespace Atomic.Pathfinding.Core.Internal
                 _collection[item.QueueIndex] = parentNode;
                 parentNode.QueueIndex = item.QueueIndex;
 
-                item.QueueIndex = parent;
+                item.QueueIndex = parentIndex;
             }
 
             _collection[item.QueueIndex] = item;
