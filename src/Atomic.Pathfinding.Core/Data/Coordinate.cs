@@ -2,12 +2,12 @@ using System;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public class Coordinate : IEquatable<Coordinate>
+    public readonly struct Coordinate : IEquatable<Coordinate>
     {
         private const int HashMultiplier = 397;
         
-        public short X { get; set; }
-        public short Y { get; set; }
+        public readonly short X { get; }
+        public readonly short Y { get; }
 
         public Coordinate(short x, short y)
         {

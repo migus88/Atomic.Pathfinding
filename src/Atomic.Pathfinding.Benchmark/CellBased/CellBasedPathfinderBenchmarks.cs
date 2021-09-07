@@ -15,7 +15,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
 
         private IGrid _classGrid;
 
-        private Pathfinder _classPathfinder;
+        private TerrainPathfinder _classPathfinder;
 
         private IAgent _agent = new Agent();
 
@@ -31,7 +31,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
 
             _classGrid = new ClassCellBasedGrid(_classMatrix);
 
-            _classPathfinder = new Pathfinder(_classGrid);
+            _classPathfinder = new TerrainPathfinder(_classGrid);
         }
 
         [Benchmark]
@@ -56,7 +56,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         [Benchmark]
         public void ClassPathfinderCreation()
         {
-            var pathfinder = new Pathfinder(_classGrid);
+            var pathfinder = new TerrainPathfinder(_classGrid);
         }
 
         [Benchmark]

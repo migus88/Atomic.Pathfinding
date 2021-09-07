@@ -11,7 +11,7 @@ using static Atomic.Pathfinding.Tests.Implementations.GridCell;
 namespace Atomic.Pathfinding.Tests
 {
     [TestFixture]
-    public class CellBasedPathfinderTests
+    public class TerrainPathfinderTests
     {
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
@@ -37,7 +37,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 2
             };
 
-            var aStar = new Core.Pathfinder(grid);
+            var aStar = new TerrainPathfinder(grid);
 
             var start = new Coordinate(0, 8);
             var destination = new Coordinate(8, 2);
@@ -75,7 +75,7 @@ namespace Atomic.Pathfinding.Tests
                 Size = 3
             };
 
-            var aStar = new Core.Pathfinder(grid);
+            var aStar = new TerrainPathfinder(grid);
 
             var start = new Coordinate(0, 8);
             var destination = new Coordinate(8, 2);
@@ -108,7 +108,7 @@ namespace Atomic.Pathfinding.Tests
 
             var grid = new Grid(matrix);
             var agent = new Agent();
-            var aStar = new Core.Pathfinder(grid);
+            var aStar = new TerrainPathfinder(grid);
 
             var start = new Coordinate(0, 0);
             var destination = new Coordinate(3, 2);
@@ -148,7 +148,7 @@ namespace Atomic.Pathfinding.Tests
                 IsMovementBetweenCornersEnabled = true
             };
 
-            var aStar = new Core.Pathfinder(grid, settings);
+            var aStar = new TerrainPathfinder(grid, settings);
 
             var start = new Coordinate(0, 0);
             var destination = new Coordinate(3, 2);
@@ -182,7 +182,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = true
             };
 
-            var aStar = new Core.Pathfinder(grid, settings);
+            var aStar = new TerrainPathfinder(grid, settings);
 
             var start = new Coordinate(0, 0);
             var destination = new Coordinate(5, 0);
@@ -222,7 +222,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Core.Pathfinder(grid, settings);
+            var aStar = new TerrainPathfinder(grid, settings);
 
             var start = new Coordinate(0, 0);
             var destination = new Coordinate(5, 0);
@@ -258,7 +258,7 @@ namespace Atomic.Pathfinding.Tests
                 IsCellWeightEnabled = false
             };
 
-            var aStar = new Core.Pathfinder(grid, settings);
+            var aStar = new TerrainPathfinder(grid, settings);
 
             var start = new Coordinate(0, 0);
             var destination = new Coordinate(99, 99);
