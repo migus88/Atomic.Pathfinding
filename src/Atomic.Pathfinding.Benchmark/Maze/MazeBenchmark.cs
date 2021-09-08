@@ -5,7 +5,9 @@ using System.Linq;
 using Atomic.Pathfinding.Benchmark.CellBased;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
+using Atomic.Pathfinding.Core.Internal;
 using BenchmarkDotNet.Attributes;
 
 namespace Atomic.Pathfinding.Benchmark.Maze
@@ -13,15 +15,14 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     [MemoryDiagnoser]
     public class MazeBenchmark
     {
-        private IGridCell[,] _matrix;
-        private IGrid _grid;
-        private Pathfinder _pathfinder;
+        private TerrainPathfinder _pathfinder;
         private short _width;
         private short _height;
         private IAgent _agent;
         private IEnumerable<Coordinate> _path;
         private Coordinate _start;
         private Coordinate _destination;
+        private Cell[] _cells;
 
 
         public MazeBenchmark()
@@ -31,21 +32,22 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             _height = (short)image.Height;
             _agent = new Agent();
 
-            _matrix = new IGridCell[_height, _width];
+            _cells = new Cell[_height * _width];
             
-            for (var x = 0; x < _height; x++)
+            for (short x = 0; x < _width; x++)
             {
-                for (var y = 0; y < _width; y++)
+                for (short y = 0; y < _height; y++)
                 {
-                    var cell = new ClassCellBasedGrid.GridCell();
-                    cell.IsOccupied = (image.GetPixel(y, x).R + image.GetPixel(y, x).G + image.GetPixel(y, x).B) / 3 < 128;
+                    var isWalkable = (image.GetPixel(x, y).R + image.GetPixel(x, y).G + image.GetPixel(x, y).B) / 3 < 128;
+                    var index = Utils.GetCellIndex(x, y, _height);
                     
-                    _matrix[x, y] = cell;
+                    _cells[index].SetIsWalkable(isWalkable);
+                    _cells[index].SetCoordinate(new Coordinate(x, y));
+                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
                 }
             }
-
-            _grid = new ClassCellBasedGrid(_matrix);
-            _pathfinder = new Pathfinder(_grid);
+            
+            _pathfinder = new TerrainPathfinder(_width, _height);
         }
 
         [Benchmark]
@@ -53,7 +55,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         {
             _start = new Coordinate(10,10);
             _destination =  new Coordinate((short)(_width - 10),(short)(_height - 10));
-            var result = _pathfinder.GetPath(_agent, _start, _destination);
+            var result = _pathfinder.GetPath(ref _cells, _agent, _start, _destination);
             _path = result.Path;
         }
         
@@ -78,7 +80,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
                     {
                         for (var x = 0; x < _height; x++)
                         {
-                            if (_matrix[x, y].IsOccupied)
+                            if (_cells[Utils.GetCellIndex(x, y, _height)].IsOccupied)
                             {
                                 graphics.FillRectangle(new SolidBrush(Color.DarkGray), y * scalar - scalar / 2,
                                     x * scalar - scalar / 2, scalar, scalar);

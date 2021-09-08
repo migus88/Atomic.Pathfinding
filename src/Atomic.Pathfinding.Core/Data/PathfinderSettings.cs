@@ -24,11 +24,11 @@
         /// </summary>
         public bool IsCellWeightEnabled { get; set; } = true;
         /// <summary>
-        /// The cost of the movement in a horizontal or vertical line.
+        /// The cost of the movement in a horizontal or vertical line
         /// </summary>
-        public float StraightMovementCost { get; set; } = 1;
+        public float StraightMovementCost { get; set; } = 1f;
         /// <summary>
-        /// The cost of the movement in a diagonal line.
+        /// The cost of the movement in a diagonal line
         /// </summary>
         public float DiagonalMovementCost { get; set; } = 1.5f;
 

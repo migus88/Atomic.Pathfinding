@@ -1,6 +1,7 @@
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
+using Atomic.Pathfinding.Core.Internal;
 using BenchmarkDotNet.Attributes;
 
 namespace Atomic.Pathfinding.Benchmark.CellBased
@@ -11,52 +12,59 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
         private const int GridWidth = 100;
         private const int GridHeight = 100;
 
-        private IGridCell[,] _classMatrix = new IGridCell[GridWidth, GridHeight];
-
-        private IGrid _classGrid;
-
         private TerrainPathfinder _classPathfinder;
 
         private IAgent _agent = new Agent();
+        private Cell[] _cells;
 
         public CellBasedPathfinderBenchmarks()
         {
-            for (var i = 0; i < GridHeight; i++)
+            _classPathfinder = new TerrainPathfinder(GridWidth, GridHeight);
+
+            _cells = new Cell[GridWidth * GridHeight];
+
+            var index = 0;
+            for (short x = 0; x < GridWidth; x++)
             {
-                for (var j = 0; j < GridWidth; j++)
+                for (short y = 0; y < GridHeight; y++)
                 {
-                    _classMatrix[j, i] = new ClassCellBasedGrid.GridCell();
+                    _cells[index].SetCoordinate(new Coordinate(x, y));
+                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
+                    index++;
                 }
             }
-
-            _classGrid = new ClassCellBasedGrid(_classMatrix);
-
-            _classPathfinder = new TerrainPathfinder(_classGrid);
         }
 
         [Benchmark]
         public void ClassMatrixCreation()
         {
+            var index = 0;
             var matrix = new IGridCell[GridWidth, GridHeight];
-            for (var i = 0; i < GridHeight; i++)
+            for (short y = 0; y < GridHeight; y++)
             {
-                for (var j = 0; j < GridWidth; j++)
+                for (short x = 0; x < GridWidth; x++)
                 {
-                    matrix[j, i] = new ClassCellBasedGrid.GridCell();
+                    matrix[x, y] = new ClassCellBasedGrid.GridCell();
+                    _cells[index].SetCoordinate(new Coordinate(x, y));
+                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
+                    index++;
+                }
+            }
+
+            var cells = new Cell[GridWidth * GridHeight];
+
+            for (short x = 0; x < GridWidth; x++)
+            {
+                for (short y = 0; y < GridHeight; y++)
+                {
                 }
             }
         }
 
         [Benchmark]
-        public void ClassGridCreation()
-        {
-            var grid = new ClassCellBasedGrid(_classMatrix);
-        }
-
-        [Benchmark]
         public void ClassPathfinderCreation()
         {
-            var pathfinder = new TerrainPathfinder(_classGrid);
+            var pathfinder = new TerrainPathfinder(GridWidth, GridHeight);
         }
 
         [Benchmark]
@@ -65,7 +73,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             var start = new Coordinate(0, 0);
             var end = new Coordinate(GridWidth - 1, GridHeight - 1);
 
-            var result = _classPathfinder.GetPath(_agent, start, end);
+            var result = _classPathfinder.GetPath(ref _cells, _agent, start, end);
         }
     }
 }
