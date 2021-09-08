@@ -30,13 +30,16 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public PathResult GetPath(ref Cell[] cells, IAgent agent, Coordinate from, Coordinate to)
+        public PathResult GetPath(Cell[] cells, IAgent agent, Coordinate from, Coordinate to)
         {
+            if (!IsPositionValid(to.X, to.Y))
+                throw new Exception("Destination is not valid");
+            
             var openSet =
                 new FasterPriorityQueue(_width *
                                         _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
 
-            var startIndex = Utils.GetCellIndex(from.X, from.Y, _height);
+            var startIndex = Utils.GetCellIndex(from.X, from.Y, _width);
             var h = GetH(ref from, ref to);
             var current = new PriorityQueueItem(startIndex);
 
@@ -51,7 +54,7 @@ namespace Atomic.Pathfinding.Core
                 {
                     break;
                 }
-
+                
                 cells[current.CellIndex].SetIsClosed(true);
                 cells[current.CellIndex].SetQueueItem(current);
                 var currentCoordinate = cells[current.CellIndex].Coordinate;
@@ -98,7 +101,10 @@ namespace Atomic.Pathfinding.Core
                 }
             }
 
-            var result = new PathResult();
+            var result = new PathResult
+            {
+                // Cells = cells
+            };
 
             if (cells[current.CellIndex].Coordinate != to)
             {
@@ -112,7 +118,7 @@ namespace Atomic.Pathfinding.Core
             for (int i = last.Depth - 1; i >= 0; i--)
             {
                 stack[i] = last.Coordinate;
-                var parentIndex = Utils.GetCellIndex(last.ParentCoordinate.X, last.ParentCoordinate.Y, _height);
+                var parentIndex = Utils.GetCellIndex(last.ParentCoordinate.X, last.ParentCoordinate.Y, _width);
                 last = cells[parentIndex];
             }
 
@@ -197,7 +203,7 @@ namespace Atomic.Pathfinding.Core
             if (!IsPositionValid(x, y))
                 return IllegalIndex;
 
-            var cellIndex = Utils.GetCellIndex(x, y, _height);
+            var cellIndex = Utils.GetCellIndex(x, y, _width);
             var cell = cells[cellIndex];
 
             return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable
@@ -232,7 +238,6 @@ namespace Atomic.Pathfinding.Core
 
             return location;
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsPositionValid(int x, int y)

@@ -73,7 +73,7 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             var start = new Coordinate(0, 0);
             var end = new Coordinate(GridWidth - 1, GridHeight - 1);
 
-            var result = _classPathfinder.GetPath(ref _cells, _agent, start, end);
+            var result = _classPathfinder.GetPath(_cells, _agent, start, end);
         }
     }
 }

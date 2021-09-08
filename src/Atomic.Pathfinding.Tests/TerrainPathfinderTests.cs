@@ -27,7 +27,7 @@ namespace Atomic.Pathfinding.Tests
             var aStar = new TerrainPathfinder(maze.Width, maze.Height);
             
 
-            var result = aStar.GetPath(ref cells, agent, start, destination);
+            var result = aStar.GetPath(cells, agent, start, destination);
             maze.AddPath((Coordinate[])result.Path);
 
             if (!Directory.Exists("Results/"))
@@ -36,6 +36,48 @@ namespace Atomic.Pathfinding.Tests
             }
             
             maze.SaveImage("Results/001.png", 100);
+        }
+        
+        [Test]
+        public void Cavern_Test()
+        {
+            var maze = new Maze("Maze/Conditions/000.gif");
+            var start = new Coordinate(10, 10);
+            var destination = new Coordinate(502, 374);
+            // var destination = new Coordinate(10, 200);
+            // var destination = new Coordinate(15, 10);
+            
+            maze.SetStart(start);
+            maze.SetDestination(destination);
+            var cells = maze.Cells;
+            var agent = new Agent { Size = 1 };
+
+            var aStar = new TerrainPathfinder(maze.Width, maze.Height);
+            
+
+            var result = aStar.GetPath(cells, agent, start, destination);
+
+            // foreach (var cell in result.Cells)
+            // {
+            //     if (cell.IsClosed)
+            //     {
+            //         maze.SetClosed(cell.Coordinate);
+            //     }
+            // }
+            
+            if(result.IsPathFound)
+            {
+                maze.AddPath((Coordinate[]) result.Path);
+            }
+
+            if (!Directory.Exists("Results/"))
+            {
+                Directory.CreateDirectory("Results/");
+            }
+            
+            maze.SaveImage("Results/000.png", 4);
+            
+            Assert.IsTrue(result.IsPathFound);
         }
     }
 }

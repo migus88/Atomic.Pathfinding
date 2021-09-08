@@ -85,12 +85,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Maze\Results" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Maze\Conditions\001.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Maze\Conditions\000.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Maze\Results\000.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

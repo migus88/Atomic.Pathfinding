@@ -18,9 +18,19 @@ namespace Atomic.Pathfinding.Tests
 
         public Maze(string path)
         {
-            _bitmap = (Bitmap)Image.FromFile(path);
-            Width = _bitmap.Width;
-            Height = _bitmap.Height;
+            var bitmap = (Bitmap)Image.FromFile(path);
+            Width = bitmap.Width;
+            Height = bitmap.Height;
+
+            _bitmap = new Bitmap(Width, Height);
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    _bitmap.SetPixel(x, y, bitmap.GetPixel(x, y));
+                }
+            }
             
             CreateCells();
         }
@@ -44,7 +54,7 @@ namespace Atomic.Pathfinding.Tests
             {
                 for (short y = 0; y < Height; y++)
                 {
-                    var index = Utils.GetCellIndex(x, y, Height);
+                    var index = Utils.GetCellIndex(x, y, Width);
                     var cell = _cells[index];
 
                     var pixel = Color.White;
@@ -70,6 +80,23 @@ namespace Atomic.Pathfinding.Tests
             }
         }
 
+        public void SetStart(Coordinate coordinate)
+        {
+            Start = coordinate;
+            _bitmap.SetPixel(coordinate.X, coordinate.Y, Color.Red);
+        }
+
+        public void SetDestination(Coordinate coordinate)
+        {
+            Start = coordinate;
+            _bitmap.SetPixel(coordinate.X, coordinate.Y, Color.Blue);
+        }
+
+        public void SetClosed(Coordinate coordinate)
+        {
+            _bitmap.SetPixel(coordinate.X, coordinate.Y, Color.Gray);
+        }
+        
         public void AddPath(Coordinate[] coordinates)
         {
             foreach (var coordinate in coordinates)
@@ -119,7 +146,7 @@ namespace Atomic.Pathfinding.Tests
             {
                 for (short x = 0; x < Width; x++)
                 {
-                    var index = Utils.GetCellIndex(x, y, Height);
+                    var index = Utils.GetCellIndex(x, y, Width);
                     var pixel = _bitmap.GetPixel(x, y);
                     
                     _cells[index].SetIsWalkable(IsWalkable(pixel));

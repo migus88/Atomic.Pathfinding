@@ -34,16 +34,16 @@ namespace Atomic.Pathfinding.Benchmark.Maze
 
             _cells = new Cell[_height * _width];
             
-            for (short x = 0; x < _width; x++)
+            for (short y = 0; y < _height; y++)
             {
-                for (short y = 0; y < _height; y++)
+                for (short x = 0; x < _width; x++)
                 {
-                    var isWalkable = (image.GetPixel(x, y).R + image.GetPixel(x, y).G + image.GetPixel(x, y).B) / 3 < 128;
-                    var index = Utils.GetCellIndex(x, y, _height);
+                    var isWalkable = image.GetPixel(x, y).ToArgb() == Color.White.ToArgb();
+                    var index = Utils.GetCellIndex(x, y, _width);
                     
                     _cells[index].SetIsWalkable(isWalkable);
                     _cells[index].SetCoordinate(new Coordinate(x, y));
-                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
+                    _cells[index].InitQueueItem(index);
                 }
             }
             
@@ -55,7 +55,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         {
             _start = new Coordinate(10,10);
             _destination =  new Coordinate((short)(_width - 10),(short)(_height - 10));
-            var result = _pathfinder.GetPath(ref _cells, _agent, _start, _destination);
+            var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
             _path = result.Path;
         }
         
@@ -80,7 +80,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
                     {
                         for (var x = 0; x < _height; x++)
                         {
-                            if (_cells[Utils.GetCellIndex(x, y, _height)].IsOccupied)
+                            if (_cells[Utils.GetCellIndex(x, y, _width)].IsOccupied)
                             {
                                 graphics.FillRectangle(new SolidBrush(Color.DarkGray), y * scalar - scalar / 2,
                                     x * scalar - scalar / 2, scalar, scalar);
