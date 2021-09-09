@@ -17,10 +17,6 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     [MemoryDiagnoser]
     public class MazeBenchmark
     {
-        public int FailCount { get; private set; } = 0;
-        public int SuccessCount { get; private set; } = 0;
-        public int TotalCount { get; private set; } = 0;
-        
         private readonly TerrainPathfinder _pathfinder;
         private readonly IAgent _agent;
         private readonly Cell[] _cells;
@@ -28,10 +24,13 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         private readonly Tools.Maze _maze;
         private readonly Coordinate _start;
         private readonly Coordinate _destination;
+        
+        private readonly Tools.Maze _testMaze;
 
         public MazeBenchmark()
         {
             _maze = new Tools.Maze("cavern.gif");
+            _testMaze = new Tools.Maze("cavern.gif", false);
             
             _start = new Coordinate(10,10);
             _destination =  new Coordinate(502, 374);
@@ -45,14 +44,25 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         }
 
         [Benchmark]
-        public void Find()
+        public void CreateMaze()
         {
-            TotalCount++;
+            _testMaze.CreateCells();
+        }
+
+        [Benchmark]
+        public void CreatePathfinder()
+        {
+            var pathfinder = new TerrainPathfinder(_testMaze.Width, _testMaze.Height);
+        }
+
+        [Benchmark]
+        public void Search()
+        {
             var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
 
             if (!result.IsPathFound)
             {
-                throw new Exception("FUCK!");
+                throw new Exception("Path not found");
             }
         }
 

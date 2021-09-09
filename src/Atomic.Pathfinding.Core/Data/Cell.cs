@@ -29,7 +29,7 @@ namespace Atomic.Pathfinding.Core.Data
             H = 0;
             G = 0;
             Depth = 0;
-            ParentCoordinate = default;
+            ParentCoordinate.Reset();
             IsInitialized = true;
         }
 

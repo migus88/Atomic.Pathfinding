@@ -2,17 +2,33 @@ using System;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public readonly struct Coordinate : IEquatable<Coordinate>
+    public struct Coordinate : IEquatable<Coordinate>
     {
         private const int HashMultiplier = 397;
         
-        public readonly short X { get; }
-        public readonly short Y { get; }
+        public short X { get; private set; }
+        public short Y { get; private set; }
 
         public Coordinate(short x, short y)
         {
             X = x;
             Y = y;
+        }
+
+        public void SetX(short x)
+        {
+            X = x;
+        }
+
+        public void SetY(short y)
+        {
+            Y = y;
+        }
+
+        public void Reset()
+        {
+            SetX(0);
+            SetY(0);
         }
 
         public static bool operator ==(Coordinate left, Coordinate right)

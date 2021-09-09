@@ -16,7 +16,7 @@ namespace Atomic.Pathfinding.Tools
         private Bitmap _bitmap;
         private Cell[] _cells;
 
-        public Maze(string path)
+        public Maze(string path, bool createCells = true)
         {
             var bitmap = (Bitmap)Image.FromFile(path);
             Width = bitmap.Width;
@@ -32,7 +32,10 @@ namespace Atomic.Pathfinding.Tools
                 }
             }
             
-            CreateCells();
+            if(createCells)
+            {
+                CreateCells();
+            }
         }
 
         public Maze(Cell[] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
@@ -139,7 +142,7 @@ namespace Atomic.Pathfinding.Tools
             bitmap.Save(path, ImageFormat.Png);
         }
 
-        private void CreateCells()
+        public void CreateCells()
         {
             _cells = new Cell[Width * Height];
             for (short y = 0; y < Height; y++)
