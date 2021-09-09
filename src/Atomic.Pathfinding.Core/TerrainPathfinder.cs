@@ -20,6 +20,7 @@ namespace Atomic.Pathfinding.Core
         private readonly int _height;
 
         private readonly int[] _neighbors = new int[MaxNeighbors];
+        private readonly FasterPriorityQueue _openSet;
 
         public TerrainPathfinder(int width, int height, PathfinderSettings settings = null)
         {
@@ -27,6 +28,7 @@ namespace Atomic.Pathfinding.Core
 
             _width = width;
             _height = height;
+            _openSet = new FasterPriorityQueue(_width *  _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,27 +36,30 @@ namespace Atomic.Pathfinding.Core
         {
             if (!IsPositionValid(to.X, to.Y))
                 throw new Exception("Destination is not valid");
+
+            for (var i = 0; i < cells.Length; i++)
+            {
+                cells[i].Reset(i);
+            }
             
-            var openSet =
-                new FasterPriorityQueue(_width *
-                                        _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
+            _openSet.Clear();
 
             var startIndex = Utils.GetCellIndex(from.X, from.Y, _width);
             var h = GetH(ref from, ref to);
             var current = new PriorityQueueItem(startIndex);
 
-            openSet.Enqueue(current, h);
+            _openSet.Enqueue(current, h);
             cells[startIndex].SetF(h);
 
-            while (openSet.Count > 0)
+            while (_openSet.Count > 0)
             {
-                current = openSet.Dequeue();
+                current = _openSet.Dequeue();
 
                 if (cells[current.CellIndex].Coordinate == to)
                 {
                     break;
                 }
-                
+
                 cells[current.CellIndex].SetIsClosed(true);
                 cells[current.CellIndex].SetQueueItem(current);
                 var currentCoordinate = cells[current.CellIndex].Coordinate;
@@ -74,7 +79,7 @@ namespace Atomic.Pathfinding.Core
                             + GetNeighborTravelWeight(ref currentCoordinate, ref neighborCoordinate)
                             + GetCellWeight(ref cells, neighborIndex);
 
-                    if (!openSet.Contains(cells[neighborIndex].QueueItem))
+                    if (!_openSet.Contains(cells[neighborIndex].QueueItem))
                     {
                         cells[neighborIndex].SetParentCoordinate(cells[current.CellIndex].Coordinate);
                         cells[neighborIndex].SetDepth(cells[current.CellIndex].Depth + 1);
@@ -87,9 +92,9 @@ namespace Atomic.Pathfinding.Core
                         cells[neighborIndex].SetF(f);
 
                         var newQueueItem = new PriorityQueueItem(neighborIndex);
-                        newQueueItem.SetQueueIndex(openSet.Count + 1);
+                        newQueueItem.SetQueueIndex(_openSet.Count + 1);
                         cells[neighborIndex].SetQueueItem(newQueueItem);
-                        openSet.Enqueue(newQueueItem, f);
+                        _openSet.Enqueue(newQueueItem, f);
                     }
                     else if (g + cells[neighborIndex].H < cells[neighborIndex].F)
                     {
@@ -132,17 +137,8 @@ namespace Atomic.Pathfinding.Core
         private float GetNeighborTravelWeight(ref Coordinate start, ref Coordinate destination)
         {
             return IsDiagonalMovement(ref start, ref destination)
-                ? _settings.DiagonalMovementCost
-                : _settings.StraightMovementCost;
-
-            var scoreH = GetH(ref start, ref destination);
-
-            if (scoreH > MaxHScoreBetweenNeighbors)
-                throw new Exception("Can travel only to neighbors");
-
-            return Math.Abs(scoreH - _settings.StraightMovementCost) < CostTolerance
-                ? _settings.StraightMovementCost
-                : _settings.DiagonalMovementCost;
+                ? _settings.DiagonalMovementCost * 150
+                : _settings.StraightMovementCost * 100;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -248,10 +244,10 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetH(ref Coordinate start, ref Coordinate destination)
         {
-            // return (start.X - destination.X) * (start.X - destination.X) +
-            //        (start.Y - destination.Y) * (start.Y - destination.Y);
-            
-            return Math.Abs((float) destination.X - start.X) + Math.Abs((float) destination.Y - start.Y);
+            return (start.X - destination.X) * (start.X - destination.X) +
+                   (start.Y - destination.Y) * (start.Y - destination.Y);
+
+            // return Math.Abs((float) destination.X - start.X) + Math.Abs((float) destination.Y - start.Y);
         }
 
         private bool IsDiagonalMovement(ref Coordinate start, ref Coordinate destination)

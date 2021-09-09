@@ -22,6 +22,17 @@ namespace Atomic.Pathfinding.Core.Data
         public bool IsInitialized { get; private set; }
         public PriorityQueueItem QueueItem { get; private set; }
 
+        public void Reset(int cellIndex)
+        {
+            IsClosed = false;
+            F = 0;
+            H = 0;
+            G = 0;
+            Depth = 0;
+            ParentCoordinate = default;
+            IsInitialized = true;
+        }
+
         public void SetIsWalkable(bool isWalkable)
         {
             IsWalkable = isWalkable;

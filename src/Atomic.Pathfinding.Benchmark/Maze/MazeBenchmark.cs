@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using Atomic.Pathfinding.Benchmark.CellBased;
 using Atomic.Pathfinding.Core;
@@ -15,96 +17,60 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     [MemoryDiagnoser]
     public class MazeBenchmark
     {
-        private TerrainPathfinder _pathfinder;
-        private short _width;
-        private short _height;
-        private IAgent _agent;
-        private IEnumerable<Coordinate> _path;
-        private Coordinate _start;
-        private Coordinate _destination;
-        private Cell[] _cells;
+        public int FailCount { get; private set; } = 0;
+        public int SuccessCount { get; private set; } = 0;
+        public int TotalCount { get; private set; } = 0;
+        
+        private readonly TerrainPathfinder _pathfinder;
+        private readonly IAgent _agent;
+        private readonly Cell[] _cells;
 
+        private readonly Tools.Maze _maze;
+        private readonly Coordinate _start;
+        private readonly Coordinate _destination;
 
         public MazeBenchmark()
         {
-            var image = (Bitmap) Image.FromFile("cavern.gif");
-            _width = (short)image.Width;
-            _height = (short)image.Height;
+            _maze = new Tools.Maze("cavern.gif");
+            
+            _start = new Coordinate(10,10);
+            _destination =  new Coordinate(502, 374);
+            
+            _maze.SetStart(_start);
+            _maze.SetDestination(_destination);
+            _cells = _maze.Cells;
             _agent = new Agent();
-
-            _cells = new Cell[_height * _width];
             
-            for (short y = 0; y < _height; y++)
-            {
-                for (short x = 0; x < _width; x++)
-                {
-                    var isWalkable = image.GetPixel(x, y).ToArgb() == Color.White.ToArgb();
-                    var index = Utils.GetCellIndex(x, y, _width);
-                    
-                    _cells[index].SetIsWalkable(isWalkable);
-                    _cells[index].SetCoordinate(new Coordinate(x, y));
-                    _cells[index].InitQueueItem(index);
-                }
-            }
-            
-            _pathfinder = new TerrainPathfinder(_width, _height);
+            _pathfinder = new TerrainPathfinder(_maze.Width, _maze.Height);
         }
 
         [Benchmark]
         public void Find()
         {
-            _start = new Coordinate(10,10);
-            _destination =  new Coordinate((short)(_width - 10),(short)(_height - 10));
+            TotalCount++;
             var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
-            _path = result.Path;
-        }
-        
-        
-        
-        public void RenderPath()
-        {
-            var scalar = 10;
 
-            var verdana = new FontFamily("Verdana");
-            var statsFont = new Font(verdana, 36, FontStyle.Bold, GraphicsUnit.Pixel);
-
-            using (var image = new Bitmap(_width * scalar, _height * scalar, PixelFormat.Format32bppArgb))
+            if (!result.IsPathFound)
             {
-                using (var graphics = Graphics.FromImage(image))
-                {
-                    graphics.Clear(Color.White);
-
-                    int closedCount = 0;
-
-                    for (var y = 0; y < _width; y++)
-                    {
-                        for (var x = 0; x < _height; x++)
-                        {
-                            if (_cells[Utils.GetCellIndex(x, y, _width)].IsOccupied)
-                            {
-                                graphics.FillRectangle(new SolidBrush(Color.DarkGray), y * scalar - scalar / 2,
-                                    x * scalar - scalar / 2, scalar, scalar);
-                            }
-                        }
-                    }
-
-                    graphics.DrawLines(new Pen(new SolidBrush(Color.LimeGreen), 8),
-                        _path.Select(n => new PointF(n.X * scalar, n.Y * scalar)).ToArray());
-
-                    CircleAtPoint(graphics, new PointF(_start.X * scalar, _start.Y * scalar), 5, Color.Red);
-                    CircleAtPoint(graphics, new PointF(_destination.X * scalar, _destination.Y * scalar), 5, Color.Green);
-
-                    image.Save(
-                        $"{_start.X}_{_start.Y}-{_destination.X}_{_destination.Y}.png",
-                        ImageFormat.Png);
-                }
+                throw new Exception("FUCK!");
             }
         }
 
-        private void CircleAtPoint(Graphics graphics, PointF center, float radius, Color color)
+        public void Render()
         {
-            var shifted = new RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2);
-            graphics.FillEllipse(new SolidBrush(color), shifted);
+            var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
+            
+            if(result.IsPathFound)
+            {
+                _maze.AddPath((Coordinate[]) result.Path);
+            }
+
+            if (!Directory.Exists("Results/"))
+            {
+                Directory.CreateDirectory("Results/");
+            }
+            
+            _maze.SaveImage("Results/cavern.png", 4);
         }
     }
 }

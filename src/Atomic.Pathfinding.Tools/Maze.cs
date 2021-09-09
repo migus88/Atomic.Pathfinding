@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 
-namespace Atomic.Pathfinding.Tests
+namespace Atomic.Pathfinding.Tools
 {
     public class Maze
     {

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
-    public ref struct FasterPriorityQueue
+    public class FasterPriorityQueue
     {
         public int Count { get; private set; }
 

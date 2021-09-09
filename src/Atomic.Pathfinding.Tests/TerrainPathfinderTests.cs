@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tests.Implementations;
+using Atomic.Pathfinding.Tools;
 using NUnit.Framework;
 using static Atomic.Pathfinding.Tests.Implementations.GridCell;
 
@@ -53,9 +55,14 @@ namespace Atomic.Pathfinding.Tests
             var agent = new Agent { Size = 1 };
 
             var aStar = new TerrainPathfinder(maze.Width, maze.Height);
-            
 
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var result = aStar.GetPath(cells, agent, start, destination);
+            stopwatch.Stop();
+
+            Console.WriteLine($"Time spent: {stopwatch.Elapsed.TotalMilliseconds}");
 
             // foreach (var cell in result.Cells)
             // {
