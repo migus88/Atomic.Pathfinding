@@ -6,23 +6,20 @@ namespace Atomic.Pathfinding.Core.Data
 {
     public struct Cell
     {
-        public bool IsClosed { get; private set; }
-        public Coordinate Coordinate { get; private set; }
-        public float F { get; private set; }
-        public float H { get; private set; }
-        public float G { get; private set; }
-        public int Depth { get; private set; }
-        
-        public bool IsWalkable { get; private set; }
-        
-        public bool IsOccupied { get; private set; }
-        
-        public float Weight { get; private set; }
-        public Coordinate ParentCoordinate { get; private set; }
-        public bool IsInitialized { get; private set; }
-        public PriorityQueueItem QueueItem { get; private set; }
+        public bool IsClosed;
+        public Coordinate Coordinate;
+        public float F;
+        public float H;
+        public float G;
+        public int Depth;
+        public bool IsWalkable;
+        public bool IsOccupied;
+        public float Weight;
+        public Coordinate ParentCoordinate;
+        public int CellIndex;
+        public int QueueIndex;
 
-        public void Reset(int cellIndex)
+        public void Reset()
         {
             IsClosed = false;
             F = 0;
@@ -30,76 +27,6 @@ namespace Atomic.Pathfinding.Core.Data
             G = 0;
             Depth = 0;
             ParentCoordinate.Reset();
-            IsInitialized = true;
-        }
-
-        public void SetIsWalkable(bool isWalkable)
-        {
-            IsWalkable = isWalkable;
-        }
-
-        public void SetIsOccupied(bool isOccupied)
-        {
-            IsOccupied = isOccupied;
-        }
-
-        public void SetWeight(float weight)
-        {
-            Weight = weight;
-        }
-
-        public void SetQueueItem(PriorityQueueItem queueItem)
-        {
-            QueueItem = queueItem;
-        }
-        
-        //TODO: Automate this initialization
-        public void InitQueueItem(int cellIndex)
-        {
-            var queueItem = new PriorityQueueItem(cellIndex);
-            SetQueueItem(queueItem);
-        }
-
-        public void SetIsClosed(bool isClosed)
-        {
-            IsInitialized = true;
-            IsClosed = isClosed;
-        }
-
-        public void SetCoordinate(Coordinate coordinate)
-        {
-            IsInitialized = true;
-            Coordinate = coordinate;
-        }
-
-        public void SetF(float f)
-        {
-            IsInitialized = true;
-            F = f;
-        }
-
-        public void SetH(float h)
-        {
-            IsInitialized = true;
-            H = h;
-        }
-
-        public void SetG(float g)
-        {
-            IsInitialized = true;
-            G = g;
-        }
-
-        public void SetDepth(int depth)
-        {
-            IsInitialized = true;
-            Depth = depth;
-        }
-
-        public void SetParentCoordinate(Coordinate coordinate)
-        {
-            IsInitialized = true;
-            ParentCoordinate = coordinate;
         }
     }
 }

@@ -8,7 +8,7 @@ using static Atomic.Pathfinding.Core.Helpers.DirectionIndexes;
 
 namespace Atomic.Pathfinding.Core
 {
-    public sealed class TerrainPathfinder
+    public sealed unsafe class TerrainPathfinder
     {
         private const int MaxNeighbors = 8;
         private const double MaxHScoreBetweenNeighbors = 2;
@@ -37,128 +37,133 @@ namespace Atomic.Pathfinding.Core
             if (!IsPositionValid(to.X, to.Y))
                 throw new Exception("Destination is not valid");
 
-            for (var i = 0; i < cells.Length; i++)
+            fixed(Cell *ptr = cells)
             {
-                cells[i].Reset(i);
-            }
-            
-            _openSet.Clear();
 
-            var startIndex = Utils.GetCellIndex(from.X, from.Y, _width);
-            var h = GetH(ref from, ref to);
-            var current = new PriorityQueueItem(startIndex);
-
-            _openSet.Enqueue(current, h);
-            cells[startIndex].SetF(h);
-
-            while (_openSet.Count > 0)
-            {
-                current = _openSet.Dequeue();
-
-                if (cells[current.CellIndex].Coordinate == to)
+                for (var i = 0; i < cells.Length; i++)
                 {
-                    break;
+                    cells[i].Reset();
                 }
 
-                cells[current.CellIndex].SetIsClosed(true);
-                cells[current.CellIndex].SetQueueItem(current);
-                var currentCoordinate = cells[current.CellIndex].Coordinate;
+                _openSet.Clear();
 
-                var neighborIndexes = GetNeighborIndexes(ref cells, ref currentCoordinate, agent.Size);
+                var startIndex = Utils.GetCellIndex(from.X, from.Y, _width);
+                var h = GetH(from, to);
 
-                foreach (var neighborIndex in neighborIndexes)
+                var current = ptr + startIndex;
+
+                _openSet.Enqueue(current, h); //F set by the queue
+
+                while (_openSet.Count > 0)
                 {
-                    if (neighborIndex == IllegalIndex || cells[neighborIndex].IsClosed)
+                    current = _openSet.Dequeue();
+
+                    if (current->Coordinate == to)
                     {
-                        continue;
+                        break;
                     }
 
-                    var neighborCoordinate = cells[neighborIndex].Coordinate;
+                    current->IsClosed = true;
 
-                    var g = cells[current.CellIndex].G
-                            + GetNeighborTravelWeight(ref currentCoordinate, ref neighborCoordinate)
-                            + GetCellWeight(ref cells, neighborIndex);
+                    var neighborIndexes = GetNeighborIndexes(ptr, current, agent.Size);
 
-                    if (!_openSet.Contains(cells[neighborIndex].QueueItem))
+                    foreach (var neighborIndex in neighborIndexes)
                     {
-                        cells[neighborIndex].SetParentCoordinate(cells[current.CellIndex].Coordinate);
-                        cells[neighborIndex].SetDepth(cells[current.CellIndex].Depth + 1);
-                        cells[neighborIndex].SetG(g);
+                        if (neighborIndex == IllegalIndex)
+                        {
+                            continue;
+                        }
 
-                        h = GetH(ref neighborCoordinate, ref to);
-                        cells[neighborIndex].SetH(h);
+                        var neighbor = ptr + neighborIndex;;
 
-                        var f = g + h;
-                        cells[neighborIndex].SetF(f);
+                        if (neighbor->IsClosed)
+                        {
+                            continue;
+                        }
 
-                        var newQueueItem = new PriorityQueueItem(neighborIndex);
-                        newQueueItem.SetQueueIndex(_openSet.Count + 1);
-                        cells[neighborIndex].SetQueueItem(newQueueItem);
-                        _openSet.Enqueue(newQueueItem, f);
-                    }
-                    else if (g + cells[neighborIndex].H < cells[neighborIndex].F)
-                    {
-                        cells[neighborIndex].SetG(g);
-                        cells[neighborIndex].SetF(g + cells[neighborIndex].H);
-                        cells[neighborIndex].SetParentCoordinate(cells[current.CellIndex].Coordinate);
-                        cells[neighborIndex].SetDepth(cells[current.CellIndex].Depth + 1);
+                        var g = current->G
+                                + GetNeighborTravelWeight(current->Coordinate, neighbor->Coordinate)
+                                + GetCellWeight(neighbor);
+
+                        if (!_openSet.Contains(neighbor))
+                        {
+                            neighbor->ParentCoordinate = current->Coordinate;
+                            neighbor->Depth = current->Depth + 1;
+                            neighbor->G = current->G;
+
+                            h = GetH(neighbor->Coordinate, to);
+                            neighbor->H = h;
+
+                            var f = g + h;
+
+                            _openSet.Enqueue(neighbor, f); //F set by the queue
+                        }
+                        else if (g + neighbor->H < neighbor->F)
+                        {
+                            neighbor->G = g;
+                            neighbor->F = g + neighbor->H;
+                            neighbor->ParentCoordinate = current->Coordinate;
+                            neighbor->Depth = current->Depth + 1;
+                        }
                     }
                 }
-            }
 
-            var result = new PathResult
-            {
-                // Cells = cells
-            };
+                var result = new PathResult
+                {
+                    // Cells = cells
+                };
 
-            if (cells[current.CellIndex].Coordinate != to)
-            {
+                if (current->Coordinate != to)
+                {
+                    return result;
+                }
+
+
+                var last = current;
+                var stack = new Coordinate[last->Depth];
+
+                for (int i = last->Depth - 1; i >= 0; i--)
+                {
+                    stack[i] = last->Coordinate;
+                    var parentIndex = Utils.GetCellIndex(last->ParentCoordinate.X, last->ParentCoordinate.Y, _width);
+                    last = ptr + parentIndex;
+                }
+
+                result.Path = stack;
+
                 return result;
             }
-
-
-            var last = cells[current.CellIndex];
-            var stack = new Coordinate[last.Depth];
-
-            for (int i = last.Depth - 1; i >= 0; i--)
-            {
-                stack[i] = last.Coordinate;
-                var parentIndex = Utils.GetCellIndex(last.ParentCoordinate.X, last.ParentCoordinate.Y, _width);
-                last = cells[parentIndex];
-            }
-
-            result.Path = stack;
-
-            return result;
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetNeighborTravelWeight(ref Coordinate start, ref Coordinate destination)
+        private float GetNeighborTravelWeight(Coordinate start, Coordinate destination)
         {
-            return IsDiagonalMovement(ref start, ref destination)
+            return IsDiagonalMovement(start, destination)
                 ? _settings.DiagonalMovementCost * 150
                 : _settings.StraightMovementCost * 100;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetCellWeight(ref Cell[] cells, int cellIndex)
+        private float GetCellWeight(Cell* cell)
         {
-            return _settings.IsCellWeightEnabled ? cells[cellIndex].Weight : 0;
+            return _settings.IsCellWeightEnabled ? cell->Weight : 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int[] GetNeighborIndexes(ref Cell[] cells, ref Coordinate position, int agentSize)
+        private int[] GetNeighborIndexes(Cell* arrStart, Cell* current, int agentSize)
         {
             for (var i = 0; i < _neighbors.Length; i++)
             {
                 _neighbors[i] = IllegalIndex;
             }
 
-            _neighbors[West] = GetWalkableLocationIndex(ref cells, position.X - 1, position.Y, agentSize);
-            _neighbors[East] = GetWalkableLocationIndex(ref cells, position.X + 1, position.Y, agentSize);
-            _neighbors[South] = GetWalkableLocationIndex(ref cells, position.X, position.Y + 1, agentSize);
-            _neighbors[North] = GetWalkableLocationIndex(ref cells, position.X, position.Y - 1, agentSize);
+            var position = current->Coordinate;
+
+            _neighbors[West] = GetWalkableLocationIndex(arrStart, position.X - 1, position.Y, agentSize);
+            _neighbors[East] = GetWalkableLocationIndex(arrStart, position.X + 1, position.Y, agentSize);
+            _neighbors[South] = GetWalkableLocationIndex(arrStart, position.X, position.Y + 1, agentSize);
+            _neighbors[North] = GetWalkableLocationIndex(arrStart, position.X, position.Y - 1, agentSize);
 
             var canGoLeft = _neighbors[West] != IllegalIndex;
             var canGoRight = _neighbors[East] != IllegalIndex;
@@ -172,45 +177,45 @@ namespace Atomic.Pathfinding.Core
 
             if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[SouthWest] = GetWalkableLocationIndex(ref cells, position.X - 1, position.Y + 1, agentSize);
+                _neighbors[SouthWest] = GetWalkableLocationIndex(arrStart, position.X - 1, position.Y + 1, agentSize);
             }
 
             if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[NorthWest] = GetWalkableLocationIndex(ref cells, position.X - 1, position.Y - 1, agentSize);
+                _neighbors[NorthWest] = GetWalkableLocationIndex(arrStart, position.X - 1, position.Y - 1, agentSize);
             }
 
             if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[SouthEast] = GetWalkableLocationIndex(ref cells, position.X + 1, position.Y + 1, agentSize);
+                _neighbors[SouthEast] = GetWalkableLocationIndex(arrStart, position.X + 1, position.Y + 1, agentSize);
             }
 
             if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[NorthEast] = GetWalkableLocationIndex(ref cells, position.X + 1, position.Y - 1, agentSize);
+                _neighbors[NorthEast] = GetWalkableLocationIndex(arrStart, position.X + 1, position.Y - 1, agentSize);
             }
 
             return _neighbors;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetWalkableLocationIndex(ref Cell[] cells, int x, int y)
+        private int GetWalkableLocationIndex(Cell* arrStart, int x, int y)
         {
             if (!IsPositionValid(x, y))
                 return IllegalIndex;
 
             var cellIndex = Utils.GetCellIndex(x, y, _width);
-            var cell = cells[cellIndex];
+            var cell = arrStart + cellIndex;
 
-            return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable
+            return (_settings.IsCalculatingOccupiedCells && cell->IsOccupied) || !cell->IsWalkable
                 ? IllegalIndex
                 : cellIndex;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetWalkableLocationIndex(ref Cell[] cells, int x, int y, int agentSize)
+        private int GetWalkableLocationIndex(Cell* arrStart, int x, int y, int agentSize)
         {
-            var location = GetWalkableLocationIndex(ref cells, x, y);
+            var location = GetWalkableLocationIndex(arrStart, x, y);
 
             if (location == IllegalIndex)
             {
@@ -223,7 +228,7 @@ namespace Atomic.Pathfinding.Core
             {
                 for (var nX = 0; nX < agentSize; nX++)
                 {
-                    var neighbor = GetWalkableLocationIndex(ref cells, x + nX, y + nY);
+                    var neighbor = GetWalkableLocationIndex(arrStart, x + nX, y + nY);
 
                     if (neighbor == IllegalIndex)
                     {
@@ -242,7 +247,7 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetH(ref Coordinate start, ref Coordinate destination)
+        private float GetH(Coordinate start, Coordinate destination)
         {
             return (start.X - destination.X) * (start.X - destination.X) +
                    (start.Y - destination.Y) * (start.Y - destination.Y);
@@ -250,7 +255,7 @@ namespace Atomic.Pathfinding.Core
             // return Math.Abs((float) destination.X - start.X) + Math.Abs((float) destination.Y - start.Y);
         }
 
-        private bool IsDiagonalMovement(ref Coordinate start, ref Coordinate destination)
+        private bool IsDiagonalMovement(Coordinate start, Coordinate destination)
         {
             return start.X != destination.X && start.Y != destination.Y;
         }

@@ -151,10 +151,10 @@ namespace Atomic.Pathfinding.Tools
                 {
                     var index = Utils.GetCellIndex(x, y, Width);
                     var pixel = _bitmap.GetPixel(x, y);
-                    
-                    _cells[index].SetIsWalkable(IsWalkable(pixel));
-                    _cells[index].SetCoordinate(new Coordinate(x, y));
-                    _cells[index].InitQueueItem(index);
+
+                    ref var cell = ref _cells[index];
+                    cell.IsWalkable = IsWalkable(pixel);
+                    cell.Coordinate = new Coordinate(x, y);
 
                     if (IsStart(pixel))
                     {

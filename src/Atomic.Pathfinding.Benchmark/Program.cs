@@ -2,6 +2,7 @@
 using Atomic.Pathfinding.Benchmark.Allocation;
 using Atomic.Pathfinding.Benchmark.CellBased;
 using Atomic.Pathfinding.Benchmark.Maze;
+using Atomic.Pathfinding.Benchmark.Random;
 using Atomic.Pathfinding.Benchmark.Terrain;
 using Atomic.Pathfinding.Core;
 using BenchmarkDotNet.Running;
@@ -27,6 +28,7 @@ namespace Atomic.Pathfinding.Benchmark
             // BenchmarkRunner.Run<CellBasedPathfinderBenchmarks>();
             // BenchmarkRunner.Run<AllocationBenchmark>();
             // BenchmarkRunner.Run<TerrainBenchmarker>();
+            // BenchmarkRunner.Run<RandomBenchmarker>();
 
             // new TerrainPathfinder(100);
         }

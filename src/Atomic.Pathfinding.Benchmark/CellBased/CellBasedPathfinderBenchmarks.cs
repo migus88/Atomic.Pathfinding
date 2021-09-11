@@ -28,8 +28,8 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
             {
                 for (short y = 0; y < GridHeight; y++)
                 {
-                    _cells[index].SetCoordinate(new Coordinate(x, y));
-                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
+                    ref var cell = ref _cells[index];
+                    cell.Coordinate = new Coordinate(x, y);
                     index++;
                 }
             }
@@ -45,8 +45,8 @@ namespace Atomic.Pathfinding.Benchmark.CellBased
                 for (short x = 0; x < GridWidth; x++)
                 {
                     matrix[x, y] = new ClassCellBasedGrid.GridCell();
-                    _cells[index].SetCoordinate(new Coordinate(x, y));
-                    _cells[index].SetQueueItem(new PriorityQueueItem(index));
+                    ref var cell = ref _cells[index];
+                    cell.Coordinate = new Coordinate(x, y);
                     index++;
                 }
             }
