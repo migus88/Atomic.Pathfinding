@@ -1,23 +1,24 @@
 using System;
 using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Interfaces;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
-    public unsafe class FasterPriorityQueue
+    public unsafe class FasterPriorityQueue<T>  where T : unmanaged, ICell
     {
         public int Count { get; private set; }
 
-        private readonly Cell*[] _collection;
+        private readonly T*[] _collection;
 
         public FasterPriorityQueue(int maxNodes)
         {
             Count = 0;
-            _collection = new Cell*[maxNodes + 1];
+            _collection = new T*[maxNodes + 1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Enqueue(Cell* item, float priority)
+        public void Enqueue(T* item, float priority)
         {
             item->ScoreF = priority;
             Count++;
@@ -27,7 +28,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Cell* Dequeue()
+        public T* Dequeue()
         {
             var result = _collection[1];
 
@@ -50,7 +51,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(Cell* item)
+        public bool Contains(T* item)
         {
             return _collection[item->QueueIndex] == item;
         }
@@ -63,7 +64,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CascadeUp(Cell* item)
+        private void CascadeUp(T* item)
         {
             //aka Heapify-up
             int parentIndex;
@@ -106,7 +107,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CascadeDown(Cell* item)
+        private void CascadeDown(T* item)
         {
             //aka Heapify-down
             var finalQueueIndex = item->QueueIndex;
@@ -253,11 +254,11 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HasHigherPriority(Cell* higher, Cell* lower) =>
+        private bool HasHigherPriority(T* higher, T* lower) =>
             higher->ScoreF < lower->ScoreF;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HasHigherOrEqualPriority(Cell* higher, Cell* lower) =>
+        private bool HasHigherOrEqualPriority(T* higher, T* lower) =>
             higher->ScoreF <= lower->ScoreF;
     }
 }

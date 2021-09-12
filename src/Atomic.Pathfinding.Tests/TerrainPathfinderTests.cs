@@ -19,17 +19,16 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
         {
-            var maze = new Maze("Maze/Conditions/001.png");
+            var maze = new Maze<Cell>("Maze/Conditions/001.png");
             
             var start = maze.Start;
             var destination = maze.Destination;
-            var cells = maze.Cells;
             var agent = new Agent { Size = 2 };
 
-            var aStar = new TerrainPathfinder(maze.Width, maze.Height);
+            var aStar = new TerrainPathfinder<Cell>(maze.Width, maze.Height);
             
 
-            var result = aStar.GetPath(cells, agent, start, destination);
+            var result = aStar.GetPath(maze, agent, start, destination);
             maze.AddPath((Coordinate[])result.Path);
 
             if (!Directory.Exists("Results/"))
@@ -43,21 +42,20 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void Cavern_Test()
         {
-            var maze = new Maze("Maze/Conditions/000.gif");
+            var maze = new Maze<Cell>("Maze/Conditions/000.gif");
             var start = new Coordinate(10, 10);
             var destination = new Coordinate(502, 374);
             
             maze.SetStart(start);
             maze.SetDestination(destination);
-            var cells = maze.Cells;
             var agent = new Agent { Size = 1 };
 
-            var aStar = new TerrainPathfinder(maze.Width, maze.Height);
+            var aStar = new TerrainPathfinder<Cell>(maze.Width, maze.Height);
             
-            var result = aStar.GetPath(cells, agent, start, destination);
+            var result = aStar.GetPath(maze, agent, start, destination);
 
             var closedCount = 0;
-            foreach (var cell in cells)
+            foreach (var cell in maze.Cells)
             {
                 if (cell.IsClosed)
                 {

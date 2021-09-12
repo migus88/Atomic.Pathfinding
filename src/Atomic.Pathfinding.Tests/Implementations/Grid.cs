@@ -62,7 +62,7 @@ namespace Atomic.Pathfinding.Tests.Implementations
 
             foreach (var item in path)
             {
-                matrix[item.Y, item.X].IsPath = true;
+                matrix[(int)item.Y, (int)item.X].IsPath = true;
             }
         }
 

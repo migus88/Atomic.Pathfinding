@@ -56,7 +56,7 @@ namespace Atomic.Pathfinding.Core.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Location GetLocation(Coordinate position)
         {
-            return !IsPositionValid(position.X, position.Y) ? null : _matrix[position.Y, position.X];
+            return !IsPositionValid(position.X, position.Y) ? null : _matrix[(int)position.Y, (int)position.X];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,18 +118,18 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Location GetWalkableLocation(int x, int y)
+        private Location GetWalkableLocation(float x, float y)
         {
             if (!IsPositionValid(x, y))
                 return null;
 
-            var cell = _grid.Matrix[y, x];
+            var cell = _grid.Matrix[(int)y, (int)x];
 
-            return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable ? null : _matrix[y, x];
+            return (_settings.IsCalculatingOccupiedCells && cell.IsOccupied) || !cell.IsWalkable ? null : _matrix[(int)y, (int)x];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Location GetWalkableLocation(int x, int y, int agentSize)
+        private Location GetWalkableLocation(float x, float y, int agentSize)
         {
             var location = GetWalkableLocation(x, y);
 
@@ -157,7 +157,7 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsPositionValid(int x, int y)
+        private bool IsPositionValid(float x, float y)
         {
             return x >= 0 && x < _width && y >= 0 && y < _height;
         }

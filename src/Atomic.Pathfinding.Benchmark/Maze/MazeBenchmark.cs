@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Atomic.Pathfinding.Benchmark.CellBased;
@@ -17,20 +16,20 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     [MemoryDiagnoser]
     public class MazeBenchmark
     {
-        private readonly TerrainPathfinder _pathfinder;
+        private readonly TerrainPathfinder<Cell> _pathfinder;
         private readonly IAgent _agent;
         private readonly Cell[] _cells;
 
-        private readonly Tools.Maze _maze;
+        private readonly Tools.Maze<Cell> _maze;
         private readonly Coordinate _start;
         private readonly Coordinate _destination;
         
-        private readonly Tools.Maze _testMaze;
+        private readonly Tools.Maze<Cell> _testMaze;
 
         public MazeBenchmark()
         {
-            _maze = new Tools.Maze("cavern.gif");
-            _testMaze = new Tools.Maze("cavern.gif", false);
+            _maze = new Tools.Maze<Cell>("cavern.gif");
+            _testMaze = new Tools.Maze<Cell>("cavern.gif", false);
             
             _start = new Coordinate(10,10);
             _destination =  new Coordinate(502, 374);
@@ -40,7 +39,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             _cells = _maze.Cells;
             _agent = new Agent();
             
-            _pathfinder = new TerrainPathfinder(_maze.Width, _maze.Height);
+            _pathfinder = new TerrainPathfinder<Cell>(_maze.Width, _maze.Height);
         }
 
         [Benchmark]
@@ -52,13 +51,13 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         [Benchmark]
         public void CreatePathfinder()
         {
-            var pathfinder = new TerrainPathfinder(_testMaze.Width, _testMaze.Height);
+            var pathfinder = new TerrainPathfinder<Cell>(_testMaze.Width, _testMaze.Height);
         }
 
         [Benchmark]
         public void Search()
         {
-            var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
+            var result = _pathfinder.GetPath(_maze, _agent, _start, _destination);
 
             if (!result.IsPathFound)
             {
@@ -68,7 +67,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
 
         public void Render()
         {
-            var result = _pathfinder.GetPath(_cells, _agent, _start, _destination);
+            var result = _pathfinder.GetPath(_maze, _agent, _start, _destination);
             
             if(result.IsPathFound)
             {

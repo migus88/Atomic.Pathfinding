@@ -5,7 +5,7 @@ using Atomic.Pathfinding.Core.Internal;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public struct Cell
+    public struct Cell : ICell
     {
         public bool IsClosed { get; set; }
         public Coordinate Coordinate { get; set; }

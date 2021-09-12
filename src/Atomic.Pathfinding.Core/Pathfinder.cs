@@ -165,7 +165,7 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetCellWeight(Coordinate position)
         {
-            return _settings.IsCellWeightEnabled ? _grid.Matrix[position.Y, position.X].Weight : 0;
+            return _settings.IsCellWeightEnabled ? _grid.Matrix[(int)position.Y, (int)position.X].Weight : 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -182,7 +182,7 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetScoreH(Coordinate start, Coordinate destination)
+        private float GetScoreH(Coordinate start, Coordinate destination)
         {
             return Math.Abs(destination.X - start.X) + Math.Abs(destination.Y - start.Y);
         }

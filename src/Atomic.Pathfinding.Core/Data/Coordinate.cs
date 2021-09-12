@@ -6,29 +6,19 @@ namespace Atomic.Pathfinding.Core.Data
     {
         private const int HashMultiplier = 397;
         
-        public short X { get; private set; }
-        public short Y { get; private set; }
+        public float X { get; set; }
+        public float Y { get; set; }
 
-        public Coordinate(short x, short y)
+        public Coordinate(float x, float y)
         {
             X = x;
-            Y = y;
-        }
-
-        public void SetX(short x)
-        {
-            X = x;
-        }
-
-        public void SetY(short y)
-        {
             Y = y;
         }
 
         public void Reset()
         {
-            SetX(0);
-            SetY(0);
+            X = 0;
+            Y = 0;
         }
 
         public static bool operator ==(Coordinate left, Coordinate right)
@@ -43,7 +33,7 @@ namespace Atomic.Pathfinding.Core.Data
 
         public bool Equals(Coordinate other)
         {
-            return X == other.X && Y == other.Y;
+            return Math.Abs(X - other.X) < 0.001f && Math.Abs(Y - other.Y) < 0.001f;
         }
 
         public override bool Equals(object obj)
@@ -55,7 +45,7 @@ namespace Atomic.Pathfinding.Core.Data
         {
             unchecked
             {
-                return (X * HashMultiplier) ^ Y;
+                return (X.GetHashCode() * HashMultiplier) ^ Y.GetHashCode();
             }
         }
 
