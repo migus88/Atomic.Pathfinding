@@ -19,7 +19,7 @@ namespace Atomic.Pathfinding.Core.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Enqueue(Cell* item, float priority)
         {
-            item->F = priority;
+            item->ScoreF = priority;
             Count++;
             _collection[Count] = item;
             item->QueueIndex = Count;
@@ -254,10 +254,10 @@ namespace Atomic.Pathfinding.Core.Internal
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasHigherPriority(Cell* higher, Cell* lower) =>
-            higher->F < lower->F;
+            higher->ScoreF < lower->ScoreF;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasHigherOrEqualPriority(Cell* higher, Cell* lower) =>
-            higher->F <= lower->F;
+            higher->ScoreF <= lower->ScoreF;
     }
 }

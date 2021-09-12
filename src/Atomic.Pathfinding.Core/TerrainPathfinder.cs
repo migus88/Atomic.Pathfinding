@@ -81,7 +81,7 @@ namespace Atomic.Pathfinding.Core
                             continue;
                         }
 
-                        var g = current->G
+                        var g = current->ScoreG
                                 + GetNeighborTravelWeight(current->Coordinate, neighbor->Coordinate)
                                 + GetCellWeight(neighbor);
 
@@ -89,19 +89,19 @@ namespace Atomic.Pathfinding.Core
                         {
                             neighbor->ParentCoordinate = current->Coordinate;
                             neighbor->Depth = current->Depth + 1;
-                            neighbor->G = current->G;
+                            neighbor->ScoreG = current->ScoreG;
 
                             h = GetH(neighbor->Coordinate, to);
-                            neighbor->H = h;
+                            neighbor->ScoreH = h;
 
                             var f = g + h;
 
                             _openSet.Enqueue(neighbor, f); //F set by the queue
                         }
-                        else if (g + neighbor->H < neighbor->F)
+                        else if (g + neighbor->ScoreH < neighbor->ScoreF)
                         {
-                            neighbor->G = g;
-                            neighbor->F = g + neighbor->H;
+                            neighbor->ScoreG = g;
+                            neighbor->ScoreF = g + neighbor->ScoreH;
                             neighbor->ParentCoordinate = current->Coordinate;
                             neighbor->Depth = current->Depth + 1;
                         }
