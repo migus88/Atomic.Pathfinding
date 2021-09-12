@@ -46,8 +46,6 @@ namespace Atomic.Pathfinding.Tests
             var maze = new Maze("Maze/Conditions/000.gif");
             var start = new Coordinate(10, 10);
             var destination = new Coordinate(502, 374);
-            // var destination = new Coordinate(10, 200);
-            // var destination = new Coordinate(15, 10);
             
             maze.SetStart(start);
             maze.SetDestination(destination);
@@ -55,22 +53,20 @@ namespace Atomic.Pathfinding.Tests
             var agent = new Agent { Size = 1 };
 
             var aStar = new TerrainPathfinder(maze.Width, maze.Height);
-
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            
             var result = aStar.GetPath(cells, agent, start, destination);
-            stopwatch.Stop();
 
-            Console.WriteLine($"Time spent: {stopwatch.Elapsed.TotalMilliseconds}");
+            var closedCount = 0;
+            foreach (var cell in cells)
+            {
+                if (cell.IsClosed)
+                {
+                    closedCount++;
+                    maze.SetClosed(cell.Coordinate);
+                }
+            }
 
-            // foreach (var cell in result.Cells)
-            // {
-            //     if (cell.IsClosed)
-            //     {
-            //         maze.SetClosed(cell.Coordinate);
-            //     }
-            // }
+            Console.WriteLine($"Closed count: {closedCount}");
             
             if(result.IsPathFound)
             {

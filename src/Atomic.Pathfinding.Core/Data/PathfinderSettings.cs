@@ -30,7 +30,7 @@
         /// <summary>
         /// The cost of the movement in a diagonal line
         /// </summary>
-        public float DiagonalMovementCost { get; set; } = 1.5f;
+        public float DiagonalMovementCost { get; set; } = 1.41f;
 
         /// <summary>
         /// The maximum capacity for OpenSet in the algorithm

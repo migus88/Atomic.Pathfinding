@@ -39,7 +39,6 @@ namespace Atomic.Pathfinding.Core
 
             fixed(Cell *ptr = cells)
             {
-
                 for (var i = 0; i < cells.Length; i++)
                 {
                     cells[i].Reset();
@@ -80,18 +79,19 @@ namespace Atomic.Pathfinding.Core
                         {
                             continue;
                         }
-
-                        var g = current->ScoreG
-                                + GetNeighborTravelWeight(current->Coordinate, neighbor->Coordinate)
-                                + GetCellWeight(neighbor);
+                        
+                        h = GetH(neighbor->Coordinate, to);
+                        
+                        var g = current->ScoreG + 
+                                h +
+                                GetNeighborTravelWeight(current->Coordinate, neighbor->Coordinate) +
+                                GetCellWeight(neighbor);
 
                         if (!_openSet.Contains(neighbor))
                         {
                             neighbor->ParentCoordinate = current->Coordinate;
                             neighbor->Depth = current->Depth + 1;
-                            neighbor->ScoreG = current->ScoreG;
-
-                            h = GetH(neighbor->Coordinate, to);
+                            neighbor->ScoreG = g;
                             neighbor->ScoreH = h;
 
                             var f = g + h;
@@ -108,10 +108,7 @@ namespace Atomic.Pathfinding.Core
                     }
                 }
 
-                var result = new PathResult
-                {
-                    // Cells = cells
-                };
+                var result = new PathResult();
 
                 if (current->Coordinate != to)
                 {
@@ -122,7 +119,7 @@ namespace Atomic.Pathfinding.Core
                 var last = current;
                 var stack = new Coordinate[last->Depth];
 
-                for (int i = last->Depth - 1; i >= 0; i--)
+                for (var i = last->Depth - 1; i >= 0; i--)
                 {
                     stack[i] = last->Coordinate;
                     var parentIndex = Utils.GetCellIndex(last->ParentCoordinate.X, last->ParentCoordinate.Y, _width);
@@ -140,8 +137,8 @@ namespace Atomic.Pathfinding.Core
         private float GetNeighborTravelWeight(Coordinate start, Coordinate destination)
         {
             return IsDiagonalMovement(start, destination)
-                ? _settings.DiagonalMovementCost * 150
-                : _settings.StraightMovementCost * 100;
+                ? _settings.DiagonalMovementCost
+                : _settings.StraightMovementCost;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -249,10 +246,10 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetH(Coordinate start, Coordinate destination)
         {
-            return (start.X - destination.X) * (start.X - destination.X) +
-                   (start.Y - destination.Y) * (start.Y - destination.Y);
+            // return (start.X - destination.X) * (start.X - destination.X) +
+            //        (start.Y - destination.Y) * (start.Y - destination.Y);
 
-            // return Math.Abs((float) destination.X - start.X) + Math.Abs((float) destination.Y - start.Y);
+            return Math.Abs((float) destination.X - start.X) + Math.Abs((float) destination.Y - start.Y);
         }
 
         private bool IsDiagonalMovement(Coordinate start, Coordinate destination)
