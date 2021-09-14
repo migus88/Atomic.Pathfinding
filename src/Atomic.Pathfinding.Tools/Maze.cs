@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
@@ -12,14 +13,14 @@ namespace Atomic.Pathfinding.Tools
         public int Height { get; }
         public Coordinate Start { get; private set; }
         public Coordinate Destination { get; private set; }
-        public T[] Cells => _cells;
-        
+        public T[,] Cells => _cells;
+
         private Bitmap _bitmap;
-        private T[] _cells;
+        private T[,] _cells;
 
         public Maze(string path, bool createCells = true)
         {
-            var bitmap = (Bitmap)Image.FromFile(path);
+            var bitmap = (Bitmap) Image.FromFile(path);
             Width = bitmap.Width;
             Height = bitmap.Height;
 
@@ -32,55 +33,55 @@ namespace Atomic.Pathfinding.Tools
                     _bitmap.SetPixel(x, y, bitmap.GetPixel(x, y));
                 }
             }
-            
-            if(createCells)
+
+            if (createCells)
             {
                 CreateCells();
             }
         }
 
-        public Maze(T[] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
+        public Maze(T[,] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
         {
             _cells = cells;
             Width = width;
             Height = height;
             Start = start;
             Destination = destination;
-            
+
             CreateBitmap();
         }
-        public unsafe T* GetCellPointer(float x, float y)
-        {
-            return GetCellPointer(new Coordinate(x, y));
-        }
 
-        public unsafe T* GetCellPointer(Coordinate coordinate)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe T* GetCellPointer(int x, int y)
         {
-            var index = Utils.GetCellIndex(coordinate, Width);
-            fixed (T* ptr = _cells)
+            fixed (T* ptr = &_cells[x, y])
             {
-                return ptr + index;
+                return ptr;
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetCells()
         {
-            foreach (var cell in _cells)
+            for (var x = 0; x < Width; x++)
             {
-                cell.Reset();
+                for (var y = 0; y < Height; y++)
+                {
+                    ref var cell = ref _cells[x, y];
+                    cell.Reset();
+                }
             }
         }
 
         private void CreateBitmap()
         {
             _bitmap = new Bitmap(Width, Height);
-            
+
             for (short x = 0; x < Width; x++)
             {
                 for (short y = 0; y < Height; y++)
                 {
-                    var index = Utils.GetCellIndex(x, y, Width);
-                    var cell = _cells[index];
+                    var cell = _cells[x,y];
 
                     var pixel = Color.White;
 
@@ -99,7 +100,7 @@ namespace Atomic.Pathfinding.Tools
                     {
                         pixel = Color.Blue;
                     }
-                    
+
                     _bitmap.SetPixel(x, y, pixel);
                 }
             }
@@ -108,20 +109,20 @@ namespace Atomic.Pathfinding.Tools
         public void SetStart(Coordinate coordinate)
         {
             Start = coordinate;
-            _bitmap.SetPixel((int)coordinate.X, (int)coordinate.Y, Color.Red);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Red);
         }
 
         public void SetDestination(Coordinate coordinate)
         {
             Start = coordinate;
-            _bitmap.SetPixel((int)coordinate.X, (int)coordinate.Y, Color.Blue);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Blue);
         }
 
         public void SetClosed(Coordinate coordinate)
         {
-            _bitmap.SetPixel((int)coordinate.X, (int)coordinate.Y, Color.Gray);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Gray);
         }
-        
+
         public void AddPath(Coordinate[] coordinates)
         {
             foreach (var coordinate in coordinates)
@@ -131,13 +132,13 @@ namespace Atomic.Pathfinding.Tools
                     continue;
                 }
 
-                _bitmap.SetPixel((int)coordinate.X, (int)coordinate.Y, Color.Green);
+                _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Green);
             }
         }
 
         public void SaveImage(string path, int sizeMultiplier = 1)
         {
-            if(sizeMultiplier == 1)
+            if (sizeMultiplier == 1)
             {
                 _bitmap.Save(path, ImageFormat.Png);
                 return;
@@ -150,7 +151,7 @@ namespace Atomic.Pathfinding.Tools
                 for (int y = 0; y < Height; y++)
                 {
                     var color = _bitmap.GetPixel(x, y);
-                    
+
                     for (int mX = 0; mX < sizeMultiplier; mX++)
                     {
                         for (int mY = 0; mY < sizeMultiplier; mY++)
@@ -160,21 +161,20 @@ namespace Atomic.Pathfinding.Tools
                     }
                 }
             }
-            
+
             bitmap.Save(path, ImageFormat.Png);
         }
 
         public void CreateCells()
         {
-            _cells = new T[Width * Height];
+            _cells = new T[Width, Height];
             for (short y = 0; y < Height; y++)
             {
                 for (short x = 0; x < Width; x++)
                 {
-                    var index = Utils.GetCellIndex(x, y, Width);
                     var pixel = _bitmap.GetPixel(x, y);
 
-                    ref var cell = ref _cells[index];
+                    ref var cell = ref _cells[x,y];
                     cell.IsWalkable = IsWalkable(pixel);
                     cell.Coordinate = new Coordinate(x, y);
 

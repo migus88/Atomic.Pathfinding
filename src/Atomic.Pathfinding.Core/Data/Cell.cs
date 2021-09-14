@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
@@ -19,6 +20,7 @@ namespace Atomic.Pathfinding.Core.Data
         public Coordinate ParentCoordinate { get; set; }
         public int QueueIndex { get; set; }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             IsClosed = false;

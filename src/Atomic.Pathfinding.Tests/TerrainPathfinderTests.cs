@@ -52,7 +52,15 @@ namespace Atomic.Pathfinding.Tests
 
             var aStar = new TerrainPathfinder<Cell>(maze.Width, maze.Height);
             
+            //Jitting for more accurate stopwatch result
+            aStar.GetPath(maze, agent, start, destination);
+
+            var sw = new Stopwatch();
+            sw.Start();
             var result = aStar.GetPath(maze, agent, start, destination);
+            sw.Stop();
+
+            Console.WriteLine($"Elapsed: {sw.ElapsedMilliseconds} ms");
 
             var closedCount = 0;
             foreach (var cell in maze.Cells)

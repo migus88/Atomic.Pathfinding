@@ -18,7 +18,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     {
         private readonly TerrainPathfinder<Cell> _pathfinder;
         private readonly IAgent _agent;
-        private readonly Cell[] _cells;
+        private readonly Cell[,] _cells;
 
         private readonly Tools.Maze<Cell> _maze;
         private readonly Coordinate _start;
@@ -42,13 +42,13 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             _pathfinder = new TerrainPathfinder<Cell>(_maze.Width, _maze.Height);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void CreateMaze()
         {
             _testMaze.CreateCells();
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void CreatePathfinder()
         {
             var pathfinder = new TerrainPathfinder<Cell>(_testMaze.Width, _testMaze.Height);

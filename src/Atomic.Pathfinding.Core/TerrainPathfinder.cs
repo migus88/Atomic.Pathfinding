@@ -16,7 +16,7 @@ namespace Atomic.Pathfinding.Core
         private readonly int _width;
         private readonly int _height;
 
-        private readonly Coordinate?[] _neighbors = new Coordinate?[MaxNeighbors];
+        private readonly Coordinate[] _neighbors = new Coordinate[MaxNeighbors];
         private readonly FasterPriorityQueue<T> _openSet;
 
         public TerrainPathfinder(int width, int height, PathfinderSettings settings = null)
@@ -25,22 +25,22 @@ namespace Atomic.Pathfinding.Core
 
             _width = width;
             _height = height;
-            _openSet = new FasterPriorityQueue<T>(_width * _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
+            _openSet = new FasterPriorityQueue<T>(_width *
+                                                  _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PathResult GetPath(ICellProvider<T> provider, IAgent agent, Coordinate from, Coordinate to)
         {
-            if (!IsPositionValid(to))
+            if (!IsPositionValid(to.X, to.Y))
                 throw new Exception("Destination is not valid");
-            
+
             provider.ResetCells();
             _openSet.Clear();
-            
-            var h = GetH(from, to);
+
+            var h = GetH(from.X, from.Y, to.X, to.Y);
 
             var current = provider.GetCellPointer(from.X, from.Y);
-
             _openSet.Enqueue(current, h); //F set by the queue
 
             while (_openSet.Count > 0)
@@ -54,27 +54,28 @@ namespace Atomic.Pathfinding.Core
 
                 current->IsClosed = true;
 
-                var neighboringCoordinates = GetNeighboringCoordinates(provider, current, agent.Size);
+                var neighboringCoordinates = GetNeighboringCoordinates(ref provider, current, agent.Size);
 
                 foreach (var neighborCoordinate in neighboringCoordinates)
                 {
-                    if (neighborCoordinate == null)
+                    if (neighborCoordinate == default)
                     {
                         continue;
                     }
 
-                    var neighbor = provider.GetCellPointer(neighborCoordinate.Value);
-
+                    var neighbor = provider.GetCellPointer(neighborCoordinate.X, neighborCoordinate.Y);
                     if (neighbor->IsClosed)
                     {
                         continue;
                     }
 
-                    h = GetH(neighbor->Coordinate, to);
+
+                    h = GetH(neighborCoordinate.X, neighborCoordinate.Y, to.X, to.Y);
 
                     var g = current->ScoreG +
                             h +
-                            GetNeighborTravelWeight(current->Coordinate, neighbor->Coordinate) +
+                            GetNeighborTravelWeight(current->Coordinate.X, current->Coordinate.Y,
+                                neighborCoordinate.X, neighborCoordinate.Y) +
                             GetCellWeight(neighbor);
 
                     if (!_openSet.Contains(neighbor))
@@ -112,7 +113,7 @@ namespace Atomic.Pathfinding.Core
             for (var i = last->Depth - 1; i >= 0; i--)
             {
                 stack[i] = last->Coordinate;
-                last = provider.GetCellPointer(last->ParentCoordinate);
+                last = provider.GetCellPointer(last->ParentCoordinate.X, last->ParentCoordinate.Y);
             }
 
             result.Path = stack;
@@ -122,9 +123,9 @@ namespace Atomic.Pathfinding.Core
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetNeighborTravelWeight(Coordinate start, Coordinate destination)
+        private float GetNeighborTravelWeight(int startX, int startY, int destX, int destY)
         {
-            return IsDiagonalMovement(start, destination)
+            return IsDiagonalMovement(startX, startY, destX, destY)
                 ? _settings.DiagonalMovementCost
                 : _settings.StraightMovementCost;
         }
@@ -136,19 +137,19 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate?[] GetNeighboringCoordinates(ICellProvider<T> provider, T* current, int agentSize)
+        private Coordinate[] GetNeighboringCoordinates(ref ICellProvider<T> provider, T* current, int agentSize)
         {
             for (var i = 0; i < _neighbors.Length; i++)
             {
-                _neighbors[i] = null;
+                _neighbors[i] = default;
             }
 
             var position = current->Coordinate;
 
-            _neighbors[West] = GetWalkableLocation(provider, position.X - 1, position.Y, agentSize);
-            _neighbors[East] = GetWalkableLocation(provider, position.X + 1, position.Y, agentSize);
-            _neighbors[South] = GetWalkableLocation(provider, position.X, position.Y + 1, agentSize);
-            _neighbors[North] = GetWalkableLocation(provider, position.X, position.Y - 1, agentSize);
+            _neighbors[West] = GetWalkableLocation(ref provider, position.X - 1, position.Y, agentSize);
+            _neighbors[East] = GetWalkableLocation(ref provider, position.X + 1, position.Y, agentSize);
+            _neighbors[South] = GetWalkableLocation(ref provider, position.X, position.Y + 1, agentSize);
+            _neighbors[North] = GetWalkableLocation(ref provider, position.X, position.Y - 1, agentSize);
 
             if (!_settings.IsDiagonalMovementEnabled)
             {
@@ -162,60 +163,48 @@ namespace Atomic.Pathfinding.Core
 
             if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[SouthWest] = GetWalkableLocation(provider, position.X - 1, position.Y + 1, agentSize);
+                _neighbors[SouthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y + 1, agentSize);
             }
 
             if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[NorthWest] = GetWalkableLocation(provider, position.X - 1, position.Y - 1, agentSize);
+                _neighbors[NorthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y - 1, agentSize);
             }
 
             if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[SouthEast] = GetWalkableLocation(provider, position.X + 1, position.Y + 1, agentSize);
+                _neighbors[SouthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y + 1, agentSize);
             }
 
             if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
             {
-                _neighbors[NorthEast] = GetWalkableLocation(provider, position.X + 1, position.Y - 1, agentSize);
+                _neighbors[NorthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y - 1, agentSize);
             }
 
             return _neighbors;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate? GetWalkableLocation(ICellProvider<T> provider, float x, float y)
+        private Coordinate GetWalkableLocation(ref ICellProvider<T> provider, int x, int y)
         {
-            return GetWalkableLocation(provider, new Coordinate(x, y));
-        }
+            if (!IsPositionValid(x, y))
+                return default;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate? GetWalkableLocation(ICellProvider<T> provider, Coordinate coordinate)
-        {
-            if (!IsPositionValid(coordinate))
-                return null;
-
-            var cell = provider.GetCellPointer(coordinate);
+            var cell = provider.GetCellPointer(x, y);
 
             return (_settings.IsCalculatingOccupiedCells && cell->IsOccupied) || !cell->IsWalkable
-                ? (Coordinate?)null
+                ? default
                 : cell->Coordinate;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate? GetWalkableLocation(ICellProvider<T> provider, float x, float y, int agentSize)
+        private Coordinate GetWalkableLocation(ref ICellProvider<T> provider, int x, int y, int agentSize)
         {
-            return GetWalkableLocation(provider, new Coordinate(x, y), agentSize);
-        }
+            var location = GetWalkableLocation(ref provider, x, y);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Coordinate? GetWalkableLocation(ICellProvider<T> provider, Coordinate coordinate, int agentSize)
-        {
-            var location = GetWalkableLocation(provider, coordinate);
-
-            if (location == null)
+            if (!location.IsInitialized)
             {
-                return null;
+                return default;
             }
 
             //TODO: Implement clearance "baking" for non dinamyc grids
@@ -224,11 +213,11 @@ namespace Atomic.Pathfinding.Core
             {
                 for (var nX = 0; nX < agentSize; nX++)
                 {
-                    var neighbor = GetWalkableLocation(provider, new Coordinate(coordinate.X + nX, coordinate.Y + nY));
+                    var neighbor = GetWalkableLocation(ref provider, x + nX, y + nY);
 
-                    if (neighbor == null)
+                    if (!neighbor.IsInitialized)
                     {
-                        return null;
+                        return default;
                     }
                 }
             }
@@ -237,23 +226,21 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsPositionValid(Coordinate coordinate)
+        private bool IsPositionValid(int x, int y)
         {
-            return coordinate.X >= 0 && coordinate.X < _width && coordinate.Y >= 0 && coordinate.Y < _height;
+            return x >= 0 && x < _width && y >= 0 && y < _height;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetH(Coordinate start, Coordinate destination)
+        private float GetH(int startX, int startY, int destX, int destY)
         {
-            // return (start.X - destination.X) * (start.X - destination.X) +
-            //        (start.Y - destination.Y) * (start.Y - destination.Y);
-
-            return Math.Abs((float)destination.X - start.X) + Math.Abs((float)destination.Y - start.Y);
+            return Math.Abs(destX - startX) + Math.Abs(destY - startY);
         }
 
-        private bool IsDiagonalMovement(Coordinate start, Coordinate destination)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsDiagonalMovement(int startX, int startY, int destX, int destY)
         {
-            return start.X != destination.X && start.Y != destination.Y;
+            return startX != destX && startY != destY;
         }
     }
 }
