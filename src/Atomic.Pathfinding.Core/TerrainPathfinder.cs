@@ -54,7 +54,7 @@ namespace Atomic.Pathfinding.Core
 
                 current->IsClosed = true;
 
-                GetNeighbors(ref provider, current, agent.Size, ref neighbors);
+                PopulateNeighbors(ref provider, current, agent.Size, ref neighbors);
 
                 foreach (var neighbor in neighbors)
                 {
@@ -130,7 +130,7 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void GetNeighbors(ref ICellProvider<T> provider, T* current, int agentSize, ref T*[] neighbors)
+        private void PopulateNeighbors(ref ICellProvider<T> provider, T* current, int agentSize, ref T*[] neighbors)
         {
             for (var i = 0; i < neighbors.Length; i++)
             {
