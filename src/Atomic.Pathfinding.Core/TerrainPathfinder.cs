@@ -149,27 +149,27 @@ namespace Atomic.Pathfinding.Core
                 return;
             }
 
-            var canGoLeft = neighbors[West] != null;
-            var canGoRight = neighbors[East] != null;
-            var canGoDown = neighbors[South] != null;
-            var canGoUp = neighbors[North] != null;
+            var canGoWest = neighbors[West] != null;
+            var canGoEast = neighbors[East] != null;
+            var canGoSouth = neighbors[South] != null;
+            var canGoNorth = neighbors[North] != null;
 
-            if (canGoLeft || canGoDown || _settings.IsMovementBetweenCornersEnabled)
+            if (canGoWest || canGoSouth || _settings.IsMovementBetweenCornersEnabled)
             {
                 neighbors[SouthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y + 1, agentSize);
             }
 
-            if (canGoLeft || canGoUp || _settings.IsMovementBetweenCornersEnabled)
+            if (canGoWest || canGoNorth || _settings.IsMovementBetweenCornersEnabled)
             {
                 neighbors[NorthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y - 1, agentSize);
             }
 
-            if (canGoRight || canGoDown || _settings.IsMovementBetweenCornersEnabled)
+            if (canGoEast || canGoSouth || _settings.IsMovementBetweenCornersEnabled)
             {
                 neighbors[SouthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y + 1, agentSize);
             }
 
-            if (canGoRight || canGoUp || _settings.IsMovementBetweenCornersEnabled)
+            if (canGoEast || canGoNorth || _settings.IsMovementBetweenCornersEnabled)
             {
                 neighbors[NorthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y - 1, agentSize);
             }
