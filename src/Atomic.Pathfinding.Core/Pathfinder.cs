@@ -26,8 +26,7 @@ namespace Atomic.Pathfinding.Core
 
             _width = width;
             _height = height;
-            _openSet = new FastPriorityQueue<T>(_width *
-                                                  _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
+            _openSet = new FastPriorityQueue<T>(_width * _height);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,10 +38,11 @@ namespace Atomic.Pathfinding.Core
             provider.ResetCells();
             _openSet.Clear();
 
-            var h = GetH(from.X, from.Y, to.X, to.Y);
+            var scoreH = GetH(from.X, from.Y, to.X, to.Y);
 
             var current = provider.GetCellPointer(from.X, from.Y);
-            _openSet.Enqueue(current, h); //F set by the queue
+            _openSet.Enqueue(current, scoreH); //ScoreF set by the queue
+
             var neighbors = new T*[MaxNeighbors];
 
             while (_openSet.Count > 0)
@@ -65,29 +65,30 @@ namespace Atomic.Pathfinding.Core
                         continue;
                     }
 
-                    h = GetH(neighbor->Coordinate.X, neighbor->Coordinate.Y, to.X, to.Y);
+                    scoreH = GetH(neighbor->Coordinate.X, neighbor->Coordinate.Y, to.X, to.Y);
 
-                    var g = current->ScoreG +
-                            h +
-                            GetNeighborTravelWeight(current->Coordinate.X, current->Coordinate.Y,
-                                neighbor->Coordinate.X, neighbor->Coordinate.Y) +
-                            GetCellWeight(neighbor);
+                    var neighborWeight = GetCellWeight(neighbor);
+                    var neighborTravelWeight = GetNeighborTravelWeight(
+                        current->Coordinate.X, current->Coordinate.Y,
+                        neighbor->Coordinate.X, neighbor->Coordinate.Y);
+
+                    var scoreG = current->ScoreG + scoreH + neighborTravelWeight + neighborWeight;
 
                     if (!_openSet.Contains(neighbor))
                     {
                         neighbor->ParentCoordinate = current->Coordinate;
                         neighbor->Depth = current->Depth + 1;
-                        neighbor->ScoreG = g;
-                        neighbor->ScoreH = h;
+                        neighbor->ScoreG = scoreG;
+                        neighbor->ScoreH = scoreH;
 
-                        var f = g + h;
+                        var scoreF = scoreG + scoreH;
 
-                        _openSet.Enqueue(neighbor, f); //F set by the queue
+                        _openSet.Enqueue(neighbor, scoreF); //ScoreF set by the queue
                     }
-                    else if (g + neighbor->ScoreH < neighbor->ScoreF)
+                    else if (scoreG + neighbor->ScoreH < neighbor->ScoreF)
                     {
-                        neighbor->ScoreG = g;
-                        neighbor->ScoreF = g + neighbor->ScoreH;
+                        neighbor->ScoreG = scoreG;
+                        neighbor->ScoreF = scoreG + neighbor->ScoreH;
                         neighbor->ParentCoordinate = current->Coordinate;
                         neighbor->Depth = current->Depth + 1;
                     }
@@ -135,7 +136,7 @@ namespace Atomic.Pathfinding.Core
         private void PopulateNeighbors(ref ICellProvider<T> provider, T* current, int agentSize, ref T*[] neighbors)
         {
             var position = current->Coordinate;
-            
+
             PopulateNeighbor(ref provider, position.X - 1, position.Y, agentSize, ref neighbors, West);
             PopulateNeighbor(ref provider, position.X + 1, position.Y, agentSize, ref neighbors, East);
             PopulateNeighbor(ref provider, position.X, position.Y + 1, agentSize, ref neighbors, South);
@@ -147,6 +148,7 @@ namespace Atomic.Pathfinding.Core
                 {
                     neighbors[i] = null;
                 }
+
                 return;
             }
 
@@ -155,21 +157,26 @@ namespace Atomic.Pathfinding.Core
             var canGoSouth = neighbors[South] != null;
             var canGoNorth = neighbors[North] != null;
             var isCornersCutAllowed = _settings.IsMovementBetweenCornersEnabled;
-            
-            PopulateNeighbor(ref provider, position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest, canGoWest || canGoSouth || isCornersCutAllowed);
-            PopulateNeighbor(ref provider, position.X - 1, position.Y - 1, agentSize, ref neighbors, NorthWest, canGoWest || canGoNorth || isCornersCutAllowed);
-            PopulateNeighbor(ref provider, position.X + 1, position.Y + 1, agentSize, ref neighbors, SouthEast, canGoEast || canGoSouth || isCornersCutAllowed);
-            PopulateNeighbor(ref provider, position.X + 1, position.Y - 1, agentSize, ref neighbors, NorthEast, canGoEast || canGoNorth || isCornersCutAllowed);
+
+            PopulateNeighbor(ref provider, position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest,
+                canGoWest || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X - 1, position.Y - 1, agentSize, ref neighbors, NorthWest,
+                canGoWest || canGoNorth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y + 1, agentSize, ref neighbors, SouthEast,
+                canGoEast || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y - 1, agentSize, ref neighbors, NorthEast,
+                canGoEast || canGoNorth || isCornersCutAllowed);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopulateNeighbor(ref ICellProvider<T> provider, int x, int y, int agentSize, ref T*[] neighbors, int neighborIndex, bool shouldPopulate = true)
+        private void PopulateNeighbor(ref ICellProvider<T> provider, int x, int y, int agentSize, ref T*[] neighbors,
+            int neighborIndex, bool shouldPopulate = true)
         {
             if (!shouldPopulate)
             {
                 return;
             }
-            
+
             neighbors[neighborIndex] = GetWalkableLocation(ref provider, x, y, agentSize);
         }
 
@@ -188,7 +195,7 @@ namespace Atomic.Pathfinding.Core
         {
             if (!IsPositionValid(x, y))
                 return null;
-            
+
             var location = GetWalkableLocation(ref provider, x, y);
 
             if (location == null)
@@ -200,7 +207,7 @@ namespace Atomic.Pathfinding.Core
             {
                 return location;
             }
-            
+
             //Clearance calculation
             for (var nY = 0; nY < agentSize; nY++)
             {

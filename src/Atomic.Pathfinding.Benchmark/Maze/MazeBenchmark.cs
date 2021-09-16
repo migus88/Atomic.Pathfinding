@@ -16,7 +16,6 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     {
         private readonly Pathfinder<Cell> _pathfinder;
         private readonly IAgent _agent;
-        private readonly Cell[,] _cells;
 
         private readonly Tools.Maze<Cell> _maze;
         private readonly Coordinate _start;
@@ -34,19 +33,12 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             
             _maze.SetStart(_start);
             _maze.SetDestination(_destination);
-            _cells = _maze.Cells;
             _agent = new Agent();
             
             _pathfinder = new Pathfinder<Cell>(_maze.Width, _maze.Height);
         }
 
-        //[Benchmark]
-        public void CreateMaze()
-        {
-            _testMaze.CreateCells();
-        }
-
-        //[Benchmark]
+        [Benchmark]
         public void CreatePathfinder()
         {
             var pathfinder = new Pathfinder<Cell>(_testMaze.Width, _testMaze.Height);
@@ -69,7 +61,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             
             if(result.IsPathFound)
             {
-                _maze.AddPath((Coordinate[]) result.Path);
+                _maze.AddPath(result.Path);
             }
 
             if (!Directory.Exists("Results/"))
