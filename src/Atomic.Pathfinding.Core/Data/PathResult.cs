@@ -7,6 +7,5 @@ namespace Atomic.Pathfinding.Core.Data
     {
         public bool IsPathFound => Path != null && Path.Any();
         public IEnumerable<Coordinate> Path { get; set; }
-        // public Cell[] Cells { get; set; }
     }
 }

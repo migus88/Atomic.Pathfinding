@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using Atomic.Pathfinding.Benchmark.CellBased;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
@@ -16,7 +14,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     [MemoryDiagnoser]
     public class MazeBenchmark
     {
-        private readonly TerrainPathfinder<Cell> _pathfinder;
+        private readonly Pathfinder<Cell> _pathfinder;
         private readonly IAgent _agent;
         private readonly Cell[,] _cells;
 
@@ -39,7 +37,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             _cells = _maze.Cells;
             _agent = new Agent();
             
-            _pathfinder = new TerrainPathfinder<Cell>(_maze.Width, _maze.Height);
+            _pathfinder = new Pathfinder<Cell>(_maze.Width, _maze.Height);
         }
 
         //[Benchmark]
@@ -51,7 +49,7 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         //[Benchmark]
         public void CreatePathfinder()
         {
-            var pathfinder = new TerrainPathfinder<Cell>(_testMaze.Width, _testMaze.Height);
+            var pathfinder = new Pathfinder<Cell>(_testMaze.Width, _testMaze.Height);
         }
 
         [Benchmark]

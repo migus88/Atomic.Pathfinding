@@ -9,7 +9,6 @@ using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tests.Implementations;
 using Atomic.Pathfinding.Tools;
 using NUnit.Framework;
-using static Atomic.Pathfinding.Tests.Implementations.GridCell;
 
 namespace Atomic.Pathfinding.Tests
 {
@@ -25,7 +24,7 @@ namespace Atomic.Pathfinding.Tests
             var destination = maze.Destination;
             var agent = new Agent { Size = 2 };
 
-            var aStar = new TerrainPathfinder<Cell>(maze.Width, maze.Height);
+            var aStar = new Pathfinder<Cell>(maze.Width, maze.Height);
             
 
             var result = aStar.GetPath(maze, agent, start, destination);
@@ -50,7 +49,7 @@ namespace Atomic.Pathfinding.Tests
             maze.SetDestination(destination);
             var agent = new Agent { Size = 1 };
 
-            var aStar = new TerrainPathfinder<Cell>(maze.Width, maze.Height);
+            var aStar = new Pathfinder<Cell>(maze.Width, maze.Height);
             
             //Jitting for more accurate stopwatch result
             aStar.GetPath(maze, agent, start, destination);

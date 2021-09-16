@@ -69,10 +69,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementations\Agent.cs" />
-    <Compile Include="Implementations\Grid.cs" />
-    <Compile Include="CellBasedPathfinderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TerrainPathfinderTests.cs" />
+    <Compile Include="PathfinderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

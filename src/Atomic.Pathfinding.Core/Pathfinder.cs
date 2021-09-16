@@ -1,190 +1,239 @@
-﻿using System;
-using System.Collections.Concurrent;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Core.Internal;
+using static Atomic.Pathfinding.Core.Helpers.DirectionIndexes;
 
 namespace Atomic.Pathfinding.Core
 {
-    /// <summary>
-    /// Finds path in a cell based environment. <br/>
-    /// Ideal for situations with limited amount of cells
-    /// </summary>
-    public class Pathfinder
+    public sealed unsafe class Pathfinder<T> where T : unmanaged, ICell
     {
-        private const double MaxHScoreBetweenNeighbors = 2;
-        private const int MinPreloadedGridsAmount = 1;
-        private const double CostTolerance = 0.01;
-        
+        private const int MaxNeighbors = 8;
+        private const int SingleCellAgentSize = 1;
 
-        private readonly Queue<LocationGrid> _locationGrids = new Queue<LocationGrid>();
-
-        private readonly IGrid _grid;
         private readonly PathfinderSettings _settings;
+        private readonly int _width;
+        private readonly int _height;
 
-        public Pathfinder(IGrid grid, PathfinderSettings settings = null,
-            int preloadedGridsAmount = MinPreloadedGridsAmount)
+        private readonly FastPriorityQueue<T> _openSet;
+
+        public Pathfinder(int width, int height, PathfinderSettings settings = null)
         {
-            if (grid?.Matrix == null || grid.Matrix.Length == 0)
-                throw new EmptyGridException();
-
             _settings = settings ?? new PathfinderSettings();
-            _grid = grid;
 
-            preloadedGridsAmount = preloadedGridsAmount < MinPreloadedGridsAmount
-                ? MinPreloadedGridsAmount
-                : preloadedGridsAmount;
-
-            for (var i = 0; i < preloadedGridsAmount; i++)
-            {
-                CreateLocationGrid();
-            }
+            _width = width;
+            _height = height;
+            _openSet = new FastPriorityQueue<T>(_width *
+                                                  _height); //TODO: Optimize the size (for example measure the amount of non walkable cells)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public PathResult GetPath(IAgent agent, Coordinate from, Coordinate to, bool postCallbackToAgent = false)
+        public PathResult GetPath(ICellProvider<T> provider, IAgent agent, Coordinate from, Coordinate to)
         {
-            var grid = GetLocationGrid();
+            if (!IsPositionValid(to.X, to.Y))
+                throw new Exception("Destination is not valid");
 
-            var result = GetPathResult(agent, grid, from, to);
+            provider.ResetCells();
+            _openSet.Clear();
 
-            if (postCallbackToAgent)
+            var h = GetH(from.X, from.Y, to.X, to.Y);
+
+            var current = provider.GetCellPointer(from.X, from.Y);
+            _openSet.Enqueue(current, h); //F set by the queue
+            var neighbors = new T*[MaxNeighbors];
+
+            while (_openSet.Count > 0)
             {
-                agent.OnPathResult(result);
-            }
+                current = _openSet.Dequeue();
 
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LocationGrid GetLocationGrid()
-        {
-            if (_locationGrids.Count == 0)
-            {
-                CreateLocationGrid();
-            }
-
-            return _locationGrids.Dequeue();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CreateLocationGrid()
-        {
-            var grid = new LocationGrid(_grid, _settings);
-            _locationGrids.Enqueue(grid);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private PathResult GetPathResult(IAgent agent, LocationGrid grid, Coordinate from, Coordinate to)
-        {
-            grid.Reset();
-
-            var start = grid.GetLocation(from);
-            
-            var scoreF = GetScoreH(from, to);
-            grid.OpenSet.Enqueue(start, scoreF);
-
-            while (grid.OpenSet.Count > 0)
-            {
-                grid.Current = grid.OpenSet.Dequeue();
-                
-                if (grid.Current.Position == to)
+                if (current->Coordinate == to)
                 {
                     break;
                 }
 
-                grid.Current.IsClosed = true;
+                current->IsClosed = true;
 
-                var neighbors = grid.GetNeighbors(grid.Current.Position, agent.Size);
+                PopulateNeighbors(ref provider, current, agent.Size, ref neighbors);
 
                 foreach (var neighbor in neighbors)
                 {
-                    if(neighbor == null || neighbor.IsClosed)
+                    if (neighbor == null || neighbor->IsClosed)
                     {
                         continue;
                     }
 
-                    var scoreG = grid.Current.ScoreG
-                                 + GetNeighborTravelWeight(grid.Current.Position, neighbor.Position)
-                                 + GetCellWeight(neighbor.Position);
+                    h = GetH(neighbor->Coordinate.X, neighbor->Coordinate.Y, to.X, to.Y);
 
-                    if (!grid.OpenSet.Contains(neighbor))
+                    var g = current->ScoreG +
+                            h +
+                            GetNeighborTravelWeight(current->Coordinate.X, current->Coordinate.Y,
+                                neighbor->Coordinate.X, neighbor->Coordinate.Y) +
+                            GetCellWeight(neighbor);
+
+                    if (!_openSet.Contains(neighbor))
                     {
-                        neighbor.Parent = grid.Current;
-                        neighbor.ScoreG = scoreG;
-                        
-                        var scoreH = GetScoreH(neighbor.Position, to);
-                        neighbor.ScoreH = scoreH;
-                        
-                        grid.OpenSet.Enqueue(neighbor, neighbor.ScoreG + neighbor.ScoreH);
+                        neighbor->ParentCoordinate = current->Coordinate;
+                        neighbor->Depth = current->Depth + 1;
+                        neighbor->ScoreG = g;
+                        neighbor->ScoreH = h;
+
+                        var f = g + h;
+
+                        _openSet.Enqueue(neighbor, f); //F set by the queue
                     }
-                    else if (scoreG + neighbor.ScoreH < neighbor.ScoreF)
+                    else if (g + neighbor->ScoreH < neighbor->ScoreF)
                     {
-                        neighbor.ScoreG = scoreG;
-                        neighbor.ScoreF = neighbor.ScoreG + neighbor.ScoreH;
-                        neighbor.Parent = grid.Current;
+                        neighbor->ScoreG = g;
+                        neighbor->ScoreF = g + neighbor->ScoreH;
+                        neighbor->ParentCoordinate = current->Coordinate;
+                        neighbor->Depth = current->Depth + 1;
                     }
                 }
             }
 
             var result = new PathResult();
 
-            if (grid.Current.Position == to)
+            if (current->Coordinate != to)
             {
-                result.Path = ReconstructPath(grid.Current);
+                return result;
             }
 
-            _locationGrids.Enqueue(grid);
+
+            var last = current;
+            var stack = new Coordinate[last->Depth];
+
+            for (var i = last->Depth - 1; i >= 0; i--)
+            {
+                stack[i] = last->Coordinate;
+                last = provider.GetCellPointer(last->ParentCoordinate.X, last->ParentCoordinate.Y);
+            }
+
+            result.Path = stack;
 
             return result;
         }
 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IEnumerable<Coordinate> ReconstructPath(Location last)
+        private float GetNeighborTravelWeight(int startX, int startY, int destX, int destY)
         {
-            if (last == null)
-                return null;
+            return IsDiagonalMovement(startX, startY, destX, destY)
+                ? _settings.DiagonalMovementCost
+                : _settings.StraightMovementCost;
+        }
 
-            var stack = new Stack<Coordinate>(last.Depth);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float GetCellWeight(T* cell)
+        {
+            return _settings.IsCellWeightEnabled ? cell->Weight : 0;
+        }
 
-            while (last != null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopulateNeighbors(ref ICellProvider<T> provider, T* current, int agentSize, ref T*[] neighbors)
+        {
+            var position = current->Coordinate;
+            
+            PopulateNeighbor(ref provider, position.X - 1, position.Y, agentSize, ref neighbors, West);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y, agentSize, ref neighbors, East);
+            PopulateNeighbor(ref provider, position.X, position.Y + 1, agentSize, ref neighbors, South);
+            PopulateNeighbor(ref provider, position.X, position.Y - 1, agentSize, ref neighbors, North);
+
+            if (!_settings.IsDiagonalMovementEnabled)
             {
-                stack.Push(last.Position);
-                last = last.Parent;
+                for (var i = DiagonalStart; i < neighbors.Length; i++)
+                {
+                    neighbors[i] = null;
+                }
+                return;
             }
 
-            return stack.AsEnumerable();
+            var canGoWest = neighbors[West] != null;
+            var canGoEast = neighbors[East] != null;
+            var canGoSouth = neighbors[South] != null;
+            var canGoNorth = neighbors[North] != null;
+            var isCornersCutAllowed = _settings.IsMovementBetweenCornersEnabled;
+            
+            PopulateNeighbor(ref provider, position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest, canGoWest || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X - 1, position.Y - 1, agentSize, ref neighbors, NorthWest, canGoWest || canGoNorth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y + 1, agentSize, ref neighbors, SouthEast, canGoEast || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y - 1, agentSize, ref neighbors, NorthEast, canGoEast || canGoNorth || isCornersCutAllowed);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetCellWeight(Coordinate position)
+        private void PopulateNeighbor(ref ICellProvider<T> provider, int x, int y, int agentSize, ref T*[] neighbors, int neighborIndex, bool shouldPopulate = true)
         {
-            return _settings.IsCellWeightEnabled ? _grid.Matrix[(int)position.Y, (int)position.X].Weight : 0;
+            if (!shouldPopulate)
+            {
+                return;
+            }
+            
+            neighbors[neighborIndex] = GetWalkableLocation(ref provider, x, y, agentSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetNeighborTravelWeight(Coordinate start, Coordinate destination)
+        private T* GetWalkableLocation(ref ICellProvider<T> provider, int x, int y)
         {
-            var scoreH = GetScoreH(start, destination);
+            var cell = provider.GetCellPointer(x, y);
 
-            if (scoreH > MaxHScoreBetweenNeighbors)
-                throw new Exception("Can travel only to neighbors");
-
-            return Math.Abs(scoreH - _settings.StraightMovementCost) < CostTolerance
-                ? _settings.StraightMovementCost
-                : _settings.DiagonalMovementCost;
+            return (_settings.IsCalculatingOccupiedCells && cell->IsOccupied) || !cell->IsWalkable
+                ? null
+                : cell;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetScoreH(Coordinate start, Coordinate destination)
+        private T* GetWalkableLocation(ref ICellProvider<T> provider, int x, int y, int agentSize)
         {
-            return Math.Abs(destination.X - start.X) + Math.Abs(destination.Y - start.Y);
+            if (!IsPositionValid(x, y))
+                return null;
+            
+            var location = GetWalkableLocation(ref provider, x, y);
+
+            if (location == null)
+            {
+                return null;
+            }
+
+            if (agentSize == SingleCellAgentSize)
+            {
+                return location;
+            }
+            
+            //Clearance calculation
+            for (var nY = 0; nY < agentSize; nY++)
+            {
+                for (var nX = 0; nX < agentSize; nX++)
+                {
+                    var neighbor = GetWalkableLocation(ref provider, x + nX, y + nY);
+
+                    if (neighbor == null)
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return location;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsPositionValid(int x, int y)
+        {
+            return x >= 0 && x < _width && y >= 0 && y < _height;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float GetH(int startX, int startY, int destX, int destY)
+        {
+            return Math.Abs(destX - startX) + Math.Abs(destY - startY);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsDiagonalMovement(int startX, int startY, int destX, int destY)
+        {
+            return startX != destX && startY != destY;
         }
     }
 }
