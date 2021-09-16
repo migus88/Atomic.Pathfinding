@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.CompilerServices;
@@ -152,9 +153,9 @@ namespace Atomic.Pathfinding.Tools
                 {
                     var color = _bitmap.GetPixel(x, y);
 
-                    for (int mX = 0; mX < sizeMultiplier; mX++)
+                    for (var mX = 0; mX < sizeMultiplier; mX++)
                     {
-                        for (int mY = 0; mY < sizeMultiplier; mY++)
+                        for (var mY = 0; mY < sizeMultiplier; mY++)
                         {
                             bitmap.SetPixel(x * sizeMultiplier + mX, y * sizeMultiplier + mY, color);
                         }
