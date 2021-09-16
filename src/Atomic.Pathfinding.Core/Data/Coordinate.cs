@@ -7,9 +7,9 @@ namespace Atomic.Pathfinding.Core.Data
     {
         private const int HashMultiplier = 397;
         
-        public int X { get; set; }
-        public int Y { get; set; }
-        public bool IsInitialized { get; set; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public bool IsInitialized { get; private set; }
 
         public Coordinate(int x, int y)
         {
