@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Helpers;
@@ -11,6 +12,7 @@ namespace Atomic.Pathfinding.Core
     public sealed unsafe class TerrainPathfinder<T> where T : unmanaged, ICell
     {
         private const int MaxNeighbors = 8;
+        private const int SingleCellAgentSize = 1;
 
         private readonly PathfinderSettings _settings;
         private readonly int _width;
@@ -132,20 +134,19 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PopulateNeighbors(ref ICellProvider<T> provider, T* current, int agentSize, ref T*[] neighbors)
         {
-            for (var i = 0; i < neighbors.Length; i++)
-            {
-                neighbors[i] = default;
-            }
-
             var position = current->Coordinate;
-
-            neighbors[West] = GetWalkableLocation(ref provider, position.X - 1, position.Y, agentSize);
-            neighbors[East] = GetWalkableLocation(ref provider, position.X + 1, position.Y, agentSize);
-            neighbors[South] = GetWalkableLocation(ref provider, position.X, position.Y + 1, agentSize);
-            neighbors[North] = GetWalkableLocation(ref provider, position.X, position.Y - 1, agentSize);
+            
+            PopulateNeighbor(ref provider, position.X - 1, position.Y, agentSize, ref neighbors, West);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y, agentSize, ref neighbors, East);
+            PopulateNeighbor(ref provider, position.X, position.Y + 1, agentSize, ref neighbors, South);
+            PopulateNeighbor(ref provider, position.X, position.Y - 1, agentSize, ref neighbors, North);
 
             if (!_settings.IsDiagonalMovementEnabled)
             {
+                for (var i = DiagonalStart; i < neighbors.Length; i++)
+                {
+                    neighbors[i] = null;
+                }
                 return;
             }
 
@@ -153,34 +154,28 @@ namespace Atomic.Pathfinding.Core
             var canGoEast = neighbors[East] != null;
             var canGoSouth = neighbors[South] != null;
             var canGoNorth = neighbors[North] != null;
+            var isCornersCutAllowed = _settings.IsMovementBetweenCornersEnabled;
+            
+            PopulateNeighbor(ref provider, position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest, canGoWest || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X - 1, position.Y - 1, agentSize, ref neighbors, NorthWest, canGoWest || canGoNorth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y + 1, agentSize, ref neighbors, SouthEast, canGoEast || canGoSouth || isCornersCutAllowed);
+            PopulateNeighbor(ref provider, position.X + 1, position.Y - 1, agentSize, ref neighbors, NorthEast, canGoEast || canGoNorth || isCornersCutAllowed);
+        }
 
-            if (canGoWest || canGoSouth || _settings.IsMovementBetweenCornersEnabled)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopulateNeighbor(ref ICellProvider<T> provider, int x, int y, int agentSize, ref T*[] neighbors, int neighborIndex, bool shouldPopulate = true)
+        {
+            if (!shouldPopulate)
             {
-                neighbors[SouthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y + 1, agentSize);
+                return;
             }
-
-            if (canGoWest || canGoNorth || _settings.IsMovementBetweenCornersEnabled)
-            {
-                neighbors[NorthWest] = GetWalkableLocation(ref provider, position.X - 1, position.Y - 1, agentSize);
-            }
-
-            if (canGoEast || canGoSouth || _settings.IsMovementBetweenCornersEnabled)
-            {
-                neighbors[SouthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y + 1, agentSize);
-            }
-
-            if (canGoEast || canGoNorth || _settings.IsMovementBetweenCornersEnabled)
-            {
-                neighbors[NorthEast] = GetWalkableLocation(ref provider, position.X + 1, position.Y - 1, agentSize);
-            }
+            
+            neighbors[neighborIndex] = GetWalkableLocation(ref provider, x, y, agentSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T* GetWalkableLocation(ref ICellProvider<T> provider, int x, int y)
         {
-            if (!IsPositionValid(x, y))
-                return default;
-
             var cell = provider.GetCellPointer(x, y);
 
             return (_settings.IsCalculatingOccupiedCells && cell->IsOccupied) || !cell->IsWalkable
@@ -191,6 +186,9 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T* GetWalkableLocation(ref ICellProvider<T> provider, int x, int y, int agentSize)
         {
+            if (!IsPositionValid(x, y))
+                return null;
+            
             var location = GetWalkableLocation(ref provider, x, y);
 
             if (location == null)
@@ -198,7 +196,11 @@ namespace Atomic.Pathfinding.Core
                 return null;
             }
 
-            //TODO: Implement clearance "baking" for non dinamyc grids
+            if (agentSize == SingleCellAgentSize)
+            {
+                return location;
+            }
+            
             //Clearance calculation
             for (var nY = 0; nY < agentSize; nY++)
             {

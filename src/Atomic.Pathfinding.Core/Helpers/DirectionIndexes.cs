@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Atomic.Pathfinding.Core.Data;
+
 namespace Atomic.Pathfinding.Core.Helpers
 {
     public sealed class DirectionIndexes
@@ -10,5 +13,7 @@ namespace Atomic.Pathfinding.Core.Helpers
         public const int NorthWest = 5;
         public const int SouthEast = 6;
         public const int NorthEast = 7;
+
+        public const int DiagonalStart = SouthWest;
     }
 }
