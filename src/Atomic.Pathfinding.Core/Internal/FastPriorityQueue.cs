@@ -1,37 +1,34 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
+using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Interfaces;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
-    //This class is an adaptation of a class from this repository:
-    //https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-    public class FastPriorityQueue<T> where T : class, IPriorityProvider
+    public unsafe class FastPriorityQueue<T>  where T : unmanaged, ICell
     {
         public int Count { get; private set; }
 
-        private readonly T[] _collection;
-        private double? _lowestPriority = null;
+        private readonly T*[] _collection;
 
         public FastPriorityQueue(int maxNodes)
         {
             Count = 0;
-            _collection = new T[maxNodes];
+            _collection = new T*[maxNodes + 1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Enqueue(T item, float priority)
+        public void Enqueue(T* item, float priority)
         {
-            item.Priority = priority;
+            item->ScoreF = priority;
             Count++;
             _collection[Count] = item;
-            item.QueueIndex = Count;
+            item->QueueIndex = Count;
             CascadeUp(item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Dequeue()
+        public T* Dequeue()
         {
             var result = _collection[1];
 
@@ -45,7 +42,7 @@ namespace Atomic.Pathfinding.Core.Internal
 
             var formerLastNode = _collection[Count];
             _collection[1] = formerLastNode;
-            formerLastNode.QueueIndex = 1;
+            formerLastNode->QueueIndex = 1;
             _collection[Count] = null;
             Count--;
 
@@ -54,16 +51,9 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UpdatePriority(T item, float priority)
+        public bool Contains(T* item)
         {
-            item.Priority = priority;
-            OnItemUpdated(item);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(T item)
-        {
-            return _collection[item.QueueIndex] == item;
+            return _collection[item->QueueIndex] == item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,24 +64,24 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CascadeUp(T item)
+        private void CascadeUp(T* item)
         {
             //aka Heapify-up
             int parentIndex;
 
-            if (item.QueueIndex > 1)
+            if (item->QueueIndex > 1)
             {
-                parentIndex = item.QueueIndex >> 1;
+                parentIndex = item->QueueIndex >> 1;
                 var parentNode = _collection[parentIndex];
 
                 if (HasHigherOrEqualPriority(parentNode, item))
                     return;
 
                 //Node has lower priority value, so move parent down the heap to make room
-                _collection[item.QueueIndex] = parentNode;
-                parentNode.QueueIndex = item.QueueIndex;
+                _collection[item->QueueIndex] = parentNode;
+                parentNode->QueueIndex = item->QueueIndex;
 
-                item.QueueIndex = parentIndex;
+                item->QueueIndex = parentIndex;
             }
             else
             {
@@ -107,20 +97,20 @@ namespace Atomic.Pathfinding.Core.Internal
                     break;
 
                 //Node has lower priority value, so move parent down the heap to make room
-                _collection[item.QueueIndex] = parentNode;
-                parentNode.QueueIndex = item.QueueIndex;
+                _collection[item->QueueIndex] = parentNode;
+                parentNode->QueueIndex = item->QueueIndex;
 
-                item.QueueIndex = parentIndex;
+                item->QueueIndex = parentIndex;
             }
 
-            _collection[item.QueueIndex] = item;
+            _collection[item->QueueIndex] = item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CascadeDown(T item)
+        private void CascadeDown(T* item)
         {
             //aka Heapify-down
-            var finalQueueIndex = item.QueueIndex;
+            var finalQueueIndex = item->QueueIndex;
             var childLeftIndex = 2 * finalQueueIndex;
 
             // If leaf node, we're done
@@ -135,8 +125,8 @@ namespace Atomic.Pathfinding.Core.Internal
                 // Check if there is a right child. If not, swap and finish.
                 if (childRightIndex > Count)
                 {
-                    item.QueueIndex = childLeftIndex;
-                    childLeft.QueueIndex = finalQueueIndex;
+                    item->QueueIndex = childLeftIndex;
+                    childLeft->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childLeft;
                     _collection[childLeftIndex] = item;
 
@@ -149,14 +139,14 @@ namespace Atomic.Pathfinding.Core.Internal
                 if (HasHigherPriority(childLeft, childRight))
                 {
                     // left is highest, move it up and continue
-                    childLeft.QueueIndex = finalQueueIndex;
+                    childLeft->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childLeft;
                     finalQueueIndex = childLeftIndex;
                 }
                 else
                 {
                     // right is even higher, move it up and continue
-                    childRight.QueueIndex = finalQueueIndex;
+                    childRight->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childRight;
                     finalQueueIndex = childRightIndex;
                 }
@@ -173,7 +163,7 @@ namespace Atomic.Pathfinding.Core.Internal
 
                 if (HasHigherPriority(childRight, item))
                 {
-                    childRight.QueueIndex = finalQueueIndex;
+                    childRight->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childRight;
                     finalQueueIndex = childRightIndex;
                 }
@@ -191,7 +181,7 @@ namespace Atomic.Pathfinding.Core.Internal
                 // If leaf node, we're done
                 if (childLeftIndex > Count)
                 {
-                    item.QueueIndex = finalQueueIndex;
+                    item->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = item;
 
                     break;
@@ -206,8 +196,8 @@ namespace Atomic.Pathfinding.Core.Internal
                     // Check if there is a right child. If not, swap and finish.
                     if (childRightIndex > Count)
                     {
-                        item.QueueIndex = childLeftIndex;
-                        childLeft.QueueIndex = finalQueueIndex;
+                        item->QueueIndex = childLeftIndex;
+                        childLeft->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childLeft;
                         _collection[childLeftIndex] = item;
 
@@ -220,14 +210,14 @@ namespace Atomic.Pathfinding.Core.Internal
                     if (HasHigherPriority(childLeft, childRight))
                     {
                         // left is highest, move it up and continue
-                        childLeft.QueueIndex = finalQueueIndex;
+                        childLeft->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childLeft;
                         finalQueueIndex = childLeftIndex;
                     }
                     else
                     {
                         // right is even higher, move it up and continue
-                        childRight.QueueIndex = finalQueueIndex;
+                        childRight->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childRight;
                         finalQueueIndex = childRightIndex;
                     }
@@ -235,7 +225,7 @@ namespace Atomic.Pathfinding.Core.Internal
                 // Not swapping with left-child, does right-child exist?
                 else if (childRightIndex > Count)
                 {
-                    item.QueueIndex = finalQueueIndex;
+                    item->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = item;
 
                     break;
@@ -247,14 +237,14 @@ namespace Atomic.Pathfinding.Core.Internal
 
                     if (HasHigherPriority(childRight, item))
                     {
-                        childRight.QueueIndex = finalQueueIndex;
+                        childRight->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childRight;
                         finalQueueIndex = childRightIndex;
                     }
                     // Neither child is higher-priority than current, so finish and stop.
                     else
                     {
-                        item.QueueIndex = finalQueueIndex;
+                        item->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = item;
 
                         break;
@@ -264,29 +254,11 @@ namespace Atomic.Pathfinding.Core.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HasHigherPriority(T higher, T lower) => higher.Priority < lower.Priority;
+        private bool HasHigherPriority(T* higher, T* lower) =>
+            higher->ScoreF < lower->ScoreF;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HasHigherOrEqualPriority(T higher, T lower) => higher.Priority <= lower.Priority;
-        
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnItemUpdated(T node)
-        {
-            //Bubble the updated node up or down as appropriate
-            var parentIndex = node.QueueIndex >> 1;
-
-            if (parentIndex > 0 && HasHigherPriority(node, _collection[parentIndex]))
-                CascadeUp(node);
-            else
-                CascadeDown(node);
-        }
-    }
-
-
-    public interface IPriorityProvider
-    {
-        float Priority { get; set; }
-        int QueueIndex { get; set; }
+        private bool HasHigherOrEqualPriority(T* higher, T* lower) =>
+            higher->ScoreF <= lower->ScoreF;
     }
 }

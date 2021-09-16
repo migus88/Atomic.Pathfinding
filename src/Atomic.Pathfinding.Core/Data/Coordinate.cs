@@ -1,45 +1,61 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public class Coordinate : IEquatable<Coordinate>
+    public struct Coordinate : IEquatable<Coordinate>
     {
         private const int HashMultiplier = 397;
         
-        public short X { get; set; }
-        public short Y { get; set; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public bool IsInitialized { get; private set; }
 
-        public Coordinate(short x, short y)
+        public Coordinate(int x, int y)
         {
             X = x;
             Y = y;
+            IsInitialized = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            X = 0;
+            Y = 0;
+            IsInitialized = false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Coordinate left, Coordinate right)
         {
             return left.Equals(right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Coordinate left, Coordinate right)
         {
             return !(left == right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Coordinate other)
         {
-            return X == other.X && Y == other.Y;
+            return Math.Abs(X - other.X) < 0.001f && Math.Abs(Y - other.Y) < 0.001f;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
             return obj is Coordinate other && Equals(other);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             unchecked
             {
-                return (X * HashMultiplier) ^ Y;
+                return (X.GetHashCode() * HashMultiplier) ^ Y.GetHashCode();
             }
         }
 

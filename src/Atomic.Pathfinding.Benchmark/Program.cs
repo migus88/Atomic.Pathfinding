@@ -1,7 +1,6 @@
 ﻿using System;
-using Atomic.Pathfinding.Benchmark.Allocation;
-using Atomic.Pathfinding.Benchmark.CellBased;
 using Atomic.Pathfinding.Benchmark.Maze;
+using Atomic.Pathfinding.Core;
 using BenchmarkDotNet.Running;
 
 namespace Atomic.Pathfinding.Benchmark
@@ -10,9 +9,7 @@ namespace Atomic.Pathfinding.Benchmark
     {
         static void Main(string[] args)
         {
-            // BenchmarkRunner.Run<MazeBenchmark>();
-             BenchmarkRunner.Run<CellBasedPathfinderBenchmarks>();
-            // BenchmarkRunner.Run<AllocationBenchmark>();
+            BenchmarkRunner.Run<MazeBenchmark>();
         }
     }
 }

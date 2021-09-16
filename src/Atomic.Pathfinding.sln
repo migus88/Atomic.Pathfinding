@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atomic.Pathfinding.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atomic.Pathfinding.Benchmark", "Atomic.Pathfinding.Benchmark\Atomic.Pathfinding.Benchmark.csproj", "{2078824F-2ABE-46E3-AB2C-9255E3FF834E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atomic.Pathfinding.Tools", "Atomic.Pathfinding.Tools\Atomic.Pathfinding.Tools.csproj", "{4BB182C3-A19C-41DC-9A1B-BAA15B233986}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{2078824F-2ABE-46E3-AB2C-9255E3FF834E}.Release|x64.Build.0 = Release|Any CPU
 		{2078824F-2ABE-46E3-AB2C-9255E3FF834E}.Release|x86.ActiveCfg = Release|Any CPU
 		{2078824F-2ABE-46E3-AB2C-9255E3FF834E}.Release|x86.Build.0 = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|x64.Build.0 = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Debug|x86.Build.0 = Debug|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|x64.ActiveCfg = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|x64.Build.0 = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|x86.ActiveCfg = Release|Any CPU
+		{4BB182C3-A19C-41DC-9A1B-BAA15B233986}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
