@@ -174,6 +174,7 @@ namespace Atomic.Pathfinding.Core
         {
             if (!shouldPopulate)
             {
+                neighbors[neighborIndex] = null;
                 return;
             }
 
