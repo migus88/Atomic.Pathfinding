@@ -9,7 +9,8 @@ namespace Atomic.Pathfinding.Benchmark
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<MazeBenchmark>();
+            // BenchmarkRunner.Run<MazeBenchmark>();
+            // BenchmarkRunner.Run<RoyTAStarBenchmarks>();
         }
     }
 }
