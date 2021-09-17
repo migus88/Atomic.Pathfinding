@@ -26,10 +26,10 @@
         /// <summary>
         /// The cost of the movement in a horizontal or vertical line
         /// </summary>
-        public float StraightMovementCost { get; set; } = 1f;
+        public float StraightMovementMultiplier { get; set; } = 1f;
         /// <summary>
         /// The cost of the movement in a diagonal line
         /// </summary>
-        public float DiagonalMovementCost { get; set; } = 1.41f;
+        public float DiagonalMovementMultiplier { get; set; } = 1.41f;
     }
 }
