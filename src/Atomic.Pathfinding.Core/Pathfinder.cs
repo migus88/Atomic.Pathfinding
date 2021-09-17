@@ -213,6 +213,9 @@ namespace Atomic.Pathfinding.Core
             {
                 for (var nX = 0; nX < agentSize; nX++)
                 {
+                    if (!IsPositionValid(x + nX, y + nY))
+                        return null;
+                    
                     var neighbor = GetWalkableLocation(ref provider, x + nX, y + nY);
 
                     if (neighbor == null)
