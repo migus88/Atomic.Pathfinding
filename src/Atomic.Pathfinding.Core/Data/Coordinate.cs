@@ -63,5 +63,8 @@ namespace Atomic.Pathfinding.Core.Data
         {
             return $"{X}:{Y}";
         }
+
+        public static implicit operator (int x, int y)(Coordinate coordinate) => (coordinate.X, coordinate.Y);
+        public static explicit operator Coordinate((int x, int y) tuple) => new Coordinate(tuple.x, tuple.y);
     }
 }
