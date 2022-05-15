@@ -13,14 +13,12 @@ namespace Atomic.Pathfinding.Benchmark
         
         private static readonly string AtomicRunner = nameof(AtomicMazeBenchmarkRunner);
         private static readonly string RoyTRunner = nameof(RoyTAStarMazeBunchmarkRunner);
-        private static readonly string BrunoMikoskiRunner = nameof(BrunoMikoskiMazeBenchmarkRunner);
 
         private readonly Dictionary<string, IMazeBenchmarkRunner> _benchmarkRunners =
             new Dictionary<string, IMazeBenchmarkRunner>
             {
                 [AtomicRunner] = new AtomicMazeBenchmarkRunner(),
                 [RoyTRunner] = new RoyTAStarMazeBunchmarkRunner(),
-                [BrunoMikoskiRunner] = new BrunoMikoskiMazeBenchmarkRunner(),
             };
         
         public MazeBenchmarkRunner()
@@ -41,6 +39,5 @@ namespace Atomic.Pathfinding.Benchmark
 
         [Benchmark] public void AtomicPathfinding() => _benchmarkRunners[AtomicRunner].FindPathBenchmark(_start, _destination);
         [Benchmark] public void RoyTAStar() => _benchmarkRunners[RoyTRunner].FindPathBenchmark(_start, _destination);
-        [Benchmark] public void BrunoMikoski() => _benchmarkRunners[BrunoMikoskiRunner].FindPathBenchmark(_start, _destination);
     }
 }
