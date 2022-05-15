@@ -12,6 +12,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
 {
     public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
     {
+        protected override string ResultImageName => nameof(RoyTAStarMazeBunchmarkRunner);
+        
         private readonly PathFinder _pathFinder = new PathFinder();
         private Node[,] _nodes;
         private Grid _grid;
@@ -46,13 +48,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
             }
             
             _maze.AddPath(coordinates);
-
-            if (!Directory.Exists(ResultsPath))
-            {
-                Directory.CreateDirectory(ResultsPath);
-            }
             
-            _maze.SaveImage(ResultImagePath, 4);
+            SaveMazeResultAsImage();
         }
 
         private Path GetPath((int x, int y) start, (int x, int y) destination)

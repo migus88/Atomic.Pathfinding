@@ -23,4 +23,17 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Brunomikoski" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="UnityEngine">
+        <HintPath>..\..\UnityEngine.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\..\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

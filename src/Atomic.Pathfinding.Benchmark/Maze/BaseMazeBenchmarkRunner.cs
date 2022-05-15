@@ -1,3 +1,4 @@
+using System.IO;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Tools;
 
@@ -6,7 +7,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
     public abstract class BaseMazeBenchmarkRunner : IMazeBenchmarkRunner
     {
         protected const string ResultsPath = "Results/";
-        protected const string ResultImagePath = ResultsPath + "cavern.png";
+        
+        protected abstract string ResultImageName { get; }
         
         protected Maze<Cell> _maze;
 
@@ -18,5 +20,17 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         public abstract void FindPathBenchmark((int x, int y) start, (int x, int y) destination);
 
         public abstract void RenderPath((int x, int y) start, (int x, int y) destination);
+
+        protected void SaveMazeResultAsImage()
+        {
+            if (!Directory.Exists(ResultsPath))
+            {
+                Directory.CreateDirectory(ResultsPath);
+            }
+
+            var imagePath = $"{ResultsPath}{ResultImageName}.png";
+            
+            _maze.SaveImage(imagePath, 4);
+        }
     }
 }

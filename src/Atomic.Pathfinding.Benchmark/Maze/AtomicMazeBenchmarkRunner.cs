@@ -9,6 +9,8 @@ namespace Atomic.Pathfinding.Benchmark.Maze
 {
     public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
     {
+        protected override string ResultImageName => nameof(AtomicMazeBenchmarkRunner);
+        
         private Pathfinder<Cell> _pathfinder;
         private IAgent _agent;
 
@@ -33,17 +35,22 @@ namespace Atomic.Pathfinding.Benchmark.Maze
         {
             var result = _pathfinder.GetPath(_maze, _agent, (Coordinate)start, (Coordinate)destination);
             
-            if(result.IsPathFound)
+            if(!result.IsPathFound)
             {
-                _maze.AddPath(result.Path);
-            }
-
-            if (!Directory.Exists(ResultsPath))
-            {
-                Directory.CreateDirectory(ResultsPath);
+                return;
             }
             
-            _maze.SaveImage(ResultImagePath, 4);
+            foreach (var cell in _maze.Cells)
+            {
+                if (cell.IsClosed)
+                {
+                    _maze.SetClosed(cell.Coordinate);
+                }
+            }
+            
+            _maze.AddPath(result.Path);
+            
+            SaveMazeResultAsImage();
         }
     }
 }

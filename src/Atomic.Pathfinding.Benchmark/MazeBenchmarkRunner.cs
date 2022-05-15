@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Atomic.Pathfinding.Benchmark.Maze;
 using BenchmarkDotNet.Attributes;
 
@@ -9,19 +11,36 @@ namespace Atomic.Pathfinding.Benchmark
         private readonly (int x, int y) _start = (10, 10);
         private readonly (int x, int y) _destination = (502, 374);
         
-        private readonly IMazeBenchmarkRunner _atomicBenchmarkRunnerRunner;
-        private readonly IMazeBenchmarkRunner _royTaStarBenchmarkRunner;
+        private static readonly string AtomicRunner = nameof(AtomicMazeBenchmarkRunner);
+        private static readonly string RoyTRunner = nameof(RoyTAStarMazeBunchmarkRunner);
+        private static readonly string BrunoMikoskiRunner = nameof(BrunoMikoskiMazeBenchmarkRunner);
+
+        private readonly Dictionary<string, IMazeBenchmarkRunner> _benchmarkRunners =
+            new Dictionary<string, IMazeBenchmarkRunner>
+            {
+                [AtomicRunner] = new AtomicMazeBenchmarkRunner(),
+                [RoyTRunner] = new RoyTAStarMazeBunchmarkRunner(),
+                [BrunoMikoskiRunner] = new BrunoMikoskiMazeBenchmarkRunner(),
+            };
         
         public MazeBenchmarkRunner()
         {
-            _atomicBenchmarkRunnerRunner = new AtomicMazeBenchmarkRunner();
-            _atomicBenchmarkRunnerRunner.Init(null);
-            
-            _royTaStarBenchmarkRunner = new RoyTAStarMazeBunchmarkRunner();
-            _royTaStarBenchmarkRunner.Init(null);
+            foreach (var benchmarkRunner in _benchmarkRunners.Values)
+            {
+                benchmarkRunner.Init(null);
+            }
         }
 
-        [Benchmark] public void AtomicPathfinding() => _atomicBenchmarkRunnerRunner.FindPathBenchmark(_start, _destination);
-        [Benchmark] public void RoyTAStar() => _royTaStarBenchmarkRunner.FindPathBenchmark(_start, _destination);
+        public void PrintAllResults()
+        {
+            foreach (var benchmarkRunner in _benchmarkRunners.Values)
+            {
+                benchmarkRunner.RenderPath(_start, _destination);
+            }
+        }
+
+        [Benchmark] public void AtomicPathfinding() => _benchmarkRunners[AtomicRunner].FindPathBenchmark(_start, _destination);
+        [Benchmark] public void RoyTAStar() => _benchmarkRunners[RoyTRunner].FindPathBenchmark(_start, _destination);
+        [Benchmark] public void BrunoMikoski() => _benchmarkRunners[BrunoMikoskiRunner].FindPathBenchmark(_start, _destination);
     }
 }
