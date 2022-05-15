@@ -67,12 +67,13 @@ namespace Atomic.Pathfinding.Core
 
                     scoreH = GetH(neighbor->Coordinate.X, neighbor->Coordinate.Y, to.X, to.Y);
 
-                    var neighborWeight = GetCellWeight(neighbor);
-                    var neighborTravelWeight = GetNeighborTravelWeight(
+                    var neighborWeight = GetCellWeightMultiplier(neighbor);
+                    
+                    var neighborTravelWeight = GetNeighborTravelWeightMultiplier(
                         current->Coordinate.X, current->Coordinate.Y,
                         neighbor->Coordinate.X, neighbor->Coordinate.Y);
 
-                    var scoreG = current->ScoreG + scoreH + neighborTravelWeight + neighborWeight;
+                    var scoreG = current->ScoreG + (neighborTravelWeight * scoreH) + (neighborWeight * scoreH);
 
                     if (!_openSet.Contains(neighbor))
                     {
@@ -119,15 +120,15 @@ namespace Atomic.Pathfinding.Core
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetNeighborTravelWeight(int startX, int startY, int destX, int destY)
+        private float GetNeighborTravelWeightMultiplier(int startX, int startY, int destX, int destY)
         {
             return IsDiagonalMovement(startX, startY, destX, destY)
-                ? _settings.DiagonalMovementCost
-                : _settings.StraightMovementCost;
+                ? _settings.DiagonalMovementMultiplier
+                : _settings.StraightMovementMultiplier;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetCellWeight(T* cell)
+        private float GetCellWeightMultiplier(T* cell)
         {
             return _settings.IsCellWeightEnabled ? cell->Weight : 0;
         }
@@ -174,6 +175,7 @@ namespace Atomic.Pathfinding.Core
         {
             if (!shouldPopulate)
             {
+                neighbors[neighborIndex] = null;
                 return;
             }
 
@@ -213,6 +215,9 @@ namespace Atomic.Pathfinding.Core
             {
                 for (var nX = 0; nX < agentSize; nX++)
                 {
+                    if (!IsPositionValid(x + nX, y + nY))
+                        return null;
+                    
                     var neighbor = GetWalkableLocation(ref provider, x + nX, y + nY);
 
                     if (neighbor == null)

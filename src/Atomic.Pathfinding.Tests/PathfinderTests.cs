@@ -75,7 +75,7 @@ namespace Atomic.Pathfinding.Tests
             
             if(result.IsPathFound)
             {
-                maze.AddPath((Coordinate[]) result.Path);
+                maze.AddPath(result.Path);
             }
 
             if (!Directory.Exists("Results/"))

@@ -41,7 +41,7 @@ namespace Atomic.Pathfinding.Core.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Coordinate other)
         {
-            return Math.Abs(X - other.X) < 0.001f && Math.Abs(Y - other.Y) < 0.001f;
+            return X == other.X && Y == other.Y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
