@@ -15,6 +15,7 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
     private readonly PathFinder _pathFinder = new PathFinder();
     private Node[,] _nodes;
     private Grid _grid;
+    private Path _path;
         
     public override void Init(Maze<Cell> maze)
     {
@@ -29,7 +30,7 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
 
     public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
     {
-        var path = GetPath(start, destination);
+        _path = GetPath(start, destination);
     }
 
     public override void RenderPath((int x, int y) start, (int x, int y) destination)

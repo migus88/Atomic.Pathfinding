@@ -11,6 +11,7 @@ public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
         
     private Pathfinder<Cell> _pathfinder;
     private IAgent _agent;
+    private PathResult _result;
 
     public override void Init(Maze<Cell> maze)
     {
@@ -21,9 +22,9 @@ public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
 
     public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
     {
-        var result = _pathfinder.GetPath(_maze, _agent, (Coordinate)start, (Coordinate)destination);
+        _result = _pathfinder.GetPath(_maze, _agent, (Coordinate)start, (Coordinate)destination);
 
-        if (!result.IsPathFound)
+        if (!_result.IsPathFound)
         {
             throw new Exception("Path not found");
         }
