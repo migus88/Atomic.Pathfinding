@@ -1,14 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
-using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tests.Implementations;
 using Atomic.Pathfinding.Tools;
-using NUnit.Framework;
 
 namespace Atomic.Pathfinding.Tests
 {

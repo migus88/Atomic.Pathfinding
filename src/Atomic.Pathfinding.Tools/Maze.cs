@@ -1,10 +1,9 @@
-using System;
 using System.Drawing;
-using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
-using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
+using SkiaSharp;
 
 namespace Atomic.Pathfinding.Tools
 {
@@ -16,16 +15,18 @@ namespace Atomic.Pathfinding.Tools
         public Coordinate Destination { get; private set; }
         public T[,] Cells => _cells;
 
-        private Bitmap _bitmap;
+        private SKBitmap _bitmap;
         private T[,] _cells;
 
         public Maze(string path, bool createCells = true)
         {
-            var bitmap = (Bitmap) Image.FromFile(path);
+            var file = File.ReadAllBytes(path);
+
+            var bitmap = SKBitmap.Decode(file);
             Width = bitmap.Width;
             Height = bitmap.Height;
 
-            _bitmap = new Bitmap(Width, Height);
+            _bitmap = new SKBitmap(Width, Height);
 
             for (int y = 0; y < Height; y++)
             {
@@ -76,7 +77,7 @@ namespace Atomic.Pathfinding.Tools
 
         private void CreateBitmap()
         {
-            _bitmap = new Bitmap(Width, Height);
+            _bitmap = new SKBitmap(Width, Height);
 
             for (short x = 0; x < Width; x++)
             {
@@ -84,22 +85,22 @@ namespace Atomic.Pathfinding.Tools
                 {
                     var cell = _cells[x,y];
 
-                    var pixel = Color.White;
+                    var pixel = SKColors.White;
 
                     if (!cell.IsWalkable || cell.IsOccupied)
                     {
-                        pixel = Color.Black;
+                        pixel = SKColors.Black;
                     }
 
                     var coordinates = new Coordinate(x, y);
 
                     if (Start == coordinates)
                     {
-                        pixel = Color.Red;
+                        pixel = SKColors.Red;
                     }
                     else if (Destination == coordinates)
                     {
-                        pixel = Color.Blue;
+                        pixel = SKColors.Blue;
                     }
 
                     _bitmap.SetPixel(x, y, pixel);
@@ -110,18 +111,18 @@ namespace Atomic.Pathfinding.Tools
         public void SetStart(Coordinate coordinate)
         {
             Start = coordinate;
-            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Red);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, SKColors.Red);
         }
 
         public void SetDestination(Coordinate coordinate)
         {
             Start = coordinate;
-            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Blue);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, SKColors.Blue);
         }
 
         public void SetClosed(Coordinate coordinate)
         {
-            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Gray);
+            _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, SKColors.Gray);
         }
 
         public void AddPath(Coordinate[] coordinates)
@@ -133,7 +134,7 @@ namespace Atomic.Pathfinding.Tools
                     continue;
                 }
 
-                _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, Color.Green);
+                _bitmap.SetPixel((int) coordinate.X, (int) coordinate.Y, SKColors.Green);
             }
         }
 
@@ -141,11 +142,11 @@ namespace Atomic.Pathfinding.Tools
         {
             if (sizeMultiplier == 1)
             {
-                _bitmap.Save(path, ImageFormat.Png);
+                SaveToFile(_bitmap, path);
                 return;
             }
 
-            var bitmap = new Bitmap(Width * sizeMultiplier, Height * sizeMultiplier);
+            var bitmap = new SKBitmap(Width * sizeMultiplier, Height * sizeMultiplier);
 
             for (int x = 0; x < Width; x++)
             {
@@ -163,7 +164,15 @@ namespace Atomic.Pathfinding.Tools
                 }
             }
 
-            bitmap.Save(path, ImageFormat.Png);
+            SaveToFile(bitmap, path);
+        }
+
+        private void SaveToFile(SKBitmap image, string path)
+        {
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            using var stream = File.OpenWrite(path);
+                
+            data.SaveTo(stream);
         }
 
         public void CreateCells()
@@ -197,10 +206,10 @@ namespace Atomic.Pathfinding.Tools
         public bool IsDestination(int x, int y) => IsDestination(_bitmap.GetPixel(x, y));
         public bool IsPath(int x, int y) => IsPath(_bitmap.GetPixel(x, y));
 
-        private bool IsWalkable(Color pixel) => !IsBlocked(pixel);
-        private bool IsBlocked(Color pixel) => pixel.ToArgb() == Color.Black.ToArgb();
-        private bool IsStart(Color pixel) => pixel.ToArgb() == Color.Red.ToArgb();
-        private bool IsDestination(Color pixel) => pixel.ToArgb() == Color.Blue.ToArgb();
-        private bool IsPath(Color pixel) => pixel.ToArgb() == Color.Green.ToArgb();
+        private bool IsWalkable(SKColor pixel) => !IsBlocked(pixel);
+        private bool IsBlocked(SKColor pixel) => pixel == SKColors.Black;
+        private bool IsStart(SKColor pixel) => pixel == SKColors.Red;
+        private bool IsDestination(SKColor pixel) => pixel == SKColors.Blue;
+        private bool IsPath(SKColor pixel) => pixel == SKColors.Green;
     }
 }
