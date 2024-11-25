@@ -1,0 +1,9 @@
+{
+  "name": "com.atomic.pathfinding",
+  "displayName": "Atomic.Pathfinding",
+  "description": "A* Pathfinding for Unity",
+  "version": "0.0.1",
+  "unity": "2019.2",
+  "unityRelease": "6f1",
+  "documentationUrl": ""
+}
