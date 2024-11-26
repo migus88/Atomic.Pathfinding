@@ -11,7 +11,7 @@
     <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release' And $(SolutionDir) != '' And Exists('$(SolutionDir)')">
     <Exec Command="./unity-package-updater.sh '$(TargetDir)$(TargetName).dll' '$(AssemblyVersion)'" WorkingDirectory="$(SolutionDir)" />
   </Target>
 
