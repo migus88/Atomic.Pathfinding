@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tests.Implementations;
 using Atomic.Pathfinding.Tools;
 
 namespace Atomic.Pathfinding.Tests
 {
     [TestFixture]
-    public class TerrainPathfinderTests
+    public unsafe class TerrainPathfinderTests
     {
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
@@ -18,10 +19,10 @@ namespace Atomic.Pathfinding.Tests
             var destination = maze.Destination;
             var agent = new Agent { Size = 2 };
 
-            var aStar = new Pathfinder(maze.Width, maze.Height);
+            var aStar = new Pathfinder(maze);
             
 
-            var result = aStar.GetPath(maze, agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
             maze.AddPath((Coordinate[])result.Path);
 
             if (!Directory.Exists("Results/"))
@@ -42,15 +43,15 @@ namespace Atomic.Pathfinding.Tests
             maze.SetStart(start);
             maze.SetDestination(destination);
             var agent = new Agent { Size = 1 };
-
-            var aStar = new Pathfinder(maze.Width, maze.Height);
+            
+            var aStar = new Pathfinder(maze);
             
             //Jitting for more accurate stopwatch result
-            aStar.GetPath(maze, agent, start, destination);
+            aStar.GetPath(agent, start, destination);
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = aStar.GetPath(maze, agent, start, destination);
+            var result = aStar.GetPath(agent, start, destination);
             sw.Stop();
 
             Console.WriteLine($"Elapsed: {sw.ElapsedMilliseconds} ms");

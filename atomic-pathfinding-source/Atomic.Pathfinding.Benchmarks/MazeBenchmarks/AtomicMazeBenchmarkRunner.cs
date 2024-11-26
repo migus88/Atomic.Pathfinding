@@ -6,7 +6,7 @@ using Atomic.Pathfinding.Tools;
 
 namespace Atomic.Pathfinding.Benchmarks.MazeBenchmarks;
 
-public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
+public unsafe class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
 {
     protected override string ResultImageName => nameof(AtomicMazeBenchmarkRunner);
         
@@ -18,12 +18,17 @@ public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
     {
         base.Init(maze);
         _agent = new Agent();
-        _pathfinder = new Pathfinder(_maze.Width, _maze.Height);
+
+        _pathfinder = new Pathfinder(_maze);
     }
 
     public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
     {
-        _result = _pathfinder.GetPath(_maze, _agent, (Coordinate)start, (Coordinate)destination);
+        if (_pathfinder == null)
+        {
+            return;
+        }
+        _result = _pathfinder.GetPath(_agent, (Coordinate)start, (Coordinate)destination);
 
         if (!_result.IsPathFound)
         {
@@ -33,7 +38,7 @@ public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
 
     public override void RenderPath((int x, int y) start, (int x, int y) destination)
     {
-        var result = _pathfinder.GetPath(_maze, _agent, (Coordinate)start, (Coordinate)destination);
+        var result = _pathfinder.GetPath(_agent, (Coordinate)start, (Coordinate)destination);
             
         if(!result.IsPathFound)
         {

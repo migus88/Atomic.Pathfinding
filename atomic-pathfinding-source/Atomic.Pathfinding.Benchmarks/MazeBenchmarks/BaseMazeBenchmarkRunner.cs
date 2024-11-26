@@ -8,7 +8,7 @@ public abstract class BaseMazeBenchmarkRunner : IMazeBenchmarkRunner
         
     protected abstract string ResultImageName { get; }
         
-    protected Tools.Maze _maze;
+    protected Maze _maze;
 
     public virtual void Init(Maze maze)
     {
