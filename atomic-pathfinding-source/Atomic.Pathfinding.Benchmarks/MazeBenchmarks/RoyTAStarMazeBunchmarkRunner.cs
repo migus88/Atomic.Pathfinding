@@ -6,7 +6,7 @@ using Roy_T.AStar.Paths;
 using Roy_T.AStar.Primitives;
 using Path = Roy_T.AStar.Paths.Path;
 
-namespace Atomic.Pathfinding.Benchmarks.Maze;
+namespace Atomic.Pathfinding.Benchmarks.MazeBenchmarks;
 
 public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
 {
@@ -17,7 +17,7 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
     private Grid _grid;
     private Path _path;
         
-    public override void Init(Maze<Cell> maze)
+    public override void Init(Maze maze)
     {
         base.Init(maze);
             

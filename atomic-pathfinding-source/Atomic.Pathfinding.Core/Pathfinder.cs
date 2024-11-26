@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
-using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Core.Internal;
 using static Atomic.Pathfinding.Core.Helpers.DirectionIndexes;
 
 namespace Atomic.Pathfinding.Core
 {
-    public sealed unsafe class Pathfinder<T> where T : unmanaged, ICell
+    public sealed unsafe class Pathfinder
     {
         private const int MaxNeighbors = 8;
         private const int SingleCellAgentSize = 1;
@@ -18,7 +16,7 @@ namespace Atomic.Pathfinding.Core
         private readonly int _width;
         private readonly int _height;
 
-        private readonly FastPriorityQueue<T> _openSet;
+        private readonly FastPriorityQueue _openSet;
 
         public Pathfinder(int width, int height, PathfinderSettings settings = null)
         {
@@ -26,7 +24,7 @@ namespace Atomic.Pathfinding.Core
 
             _width = width;
             _height = height;
-            _openSet = new FastPriorityQueue<T>(_width * _height);
+            _openSet = new FastPriorityQueue(_width * _height);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,10 +38,10 @@ namespace Atomic.Pathfinding.Core
 
             var scoreH = GetH(from.X, from.Y, to.X, to.Y);
 
-            var current = (T*)provider.GetCellPointer(from.X, from.Y);
+            var current = provider.GetCellPointer(from.X, from.Y);
             _openSet.Enqueue(current, scoreH); //ScoreF set by the queue
 
-            var neighbors = new IntPtr[MaxNeighbors];
+            var neighbors = new Cell*[MaxNeighbors];
 
             while (_openSet.Count > 0)
             {
@@ -60,7 +58,7 @@ namespace Atomic.Pathfinding.Core
 
                 foreach (var neighborPtr in neighbors)
                 {
-                    var neighbor = (T*)neighborPtr;
+                    var neighbor = neighborPtr;
                     if (neighbor == null || neighbor->IsClosed)
                     {
                         continue;
@@ -111,7 +109,7 @@ namespace Atomic.Pathfinding.Core
             for (var i = last->Depth - 1; i >= 0; i--)
             {
                 stack[i] = last->Coordinate;
-                last = (T*)provider.GetCellPointer(last->ParentCoordinate.X, last->ParentCoordinate.Y);
+                last = provider.GetCellPointer(last->ParentCoordinate.X, last->ParentCoordinate.Y);
             }
 
             result.Path = stack;
@@ -129,13 +127,13 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetCellWeightMultiplier(T* cell)
+        private float GetCellWeightMultiplier(Cell* cell)
         {
             return _settings.IsCellWeightEnabled ? cell->Weight : 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopulateNeighbors(ref ICellProvider provider, T* current, int agentSize, ref IntPtr[] neighbors)
+        private void PopulateNeighbors(ref ICellProvider provider, Cell* current, int agentSize, ref Cell*[] neighbors)
         {
             var position = current->Coordinate;
 
@@ -148,16 +146,16 @@ namespace Atomic.Pathfinding.Core
             {
                 for (var i = DiagonalStart; i < neighbors.Length; i++)
                 {
-                    neighbors[i] = IntPtr.Zero;
+                    neighbors[i] = null;
                 }
 
                 return;
             }
 
-            var canGoWest = neighbors[West] != IntPtr.Zero;
-            var canGoEast = neighbors[East] != IntPtr.Zero;
-            var canGoSouth = neighbors[South] != IntPtr.Zero;
-            var canGoNorth = neighbors[North] != IntPtr.Zero;
+            var canGoWest = neighbors[West] != null;
+            var canGoEast = neighbors[East] != null;
+            var canGoSouth = neighbors[South] != null;
+            var canGoNorth = neighbors[North] != null;
             var isCornersCutAllowed = _settings.IsMovementBetweenCornersEnabled;
 
             PopulateNeighbor(ref provider, position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest,
@@ -171,12 +169,12 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopulateNeighbor(ref ICellProvider provider, int x, int y, int agentSize, ref IntPtr[] neighbors,
+        private void PopulateNeighbor(ref ICellProvider provider, int x, int y, int agentSize, ref Cell*[] neighbors,
             int neighborIndex, bool shouldPopulate = true)
         {
             if (!shouldPopulate)
             {
-                neighbors[neighborIndex] = default;
+                neighbors[neighborIndex] = null;
                 return;
             }
 
@@ -184,26 +182,26 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IntPtr GetWalkableLocation(ref ICellProvider provider, int x, int y)
+        private Cell* GetWalkableLocation(ref ICellProvider provider, int x, int y)
         {
-            var cell = (T*)provider.GetCellPointer(x, y);
+            var cell = provider.GetCellPointer(x, y);
 
             return (_settings.IsCalculatingOccupiedCells && cell->IsOccupied) || !cell->IsWalkable
-                ? default
-                : (IntPtr)cell;
+                ? null
+                : cell;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IntPtr GetWalkableLocation(ref ICellProvider provider, int x, int y, int agentSize)
+        private Cell* GetWalkableLocation(ref ICellProvider provider, int x, int y, int agentSize)
         {
             if (!IsPositionValid(x, y))
-                return IntPtr.Zero;
+                return null;
 
             var location = GetWalkableLocation(ref provider, x, y);
 
-            if (location == IntPtr.Zero)
+            if (location == null)
             {
-                return IntPtr.Zero;
+                return null;
             }
 
             if (agentSize == SingleCellAgentSize)
@@ -217,13 +215,13 @@ namespace Atomic.Pathfinding.Core
                 for (var nX = 0; nX < agentSize; nX++)
                 {
                     if (!IsPositionValid(x + nX, y + nY))
-                        return IntPtr.Zero;
+                        return null;
                     
                     var neighbor = GetWalkableLocation(ref provider, x + nX, y + nY);
 
-                    if (neighbor == IntPtr.Zero)
+                    if (neighbor == null)
                     {
-                        return IntPtr.Zero;
+                        return null;
                     }
                 }
             }

@@ -1,12 +1,13 @@
 using System;
 using System.Runtime.CompilerServices;
+using Atomic.Pathfinding.Core.Data;
 
 namespace Atomic.Pathfinding.Core.Interfaces
 {
-    public interface ICellProvider
+    public unsafe interface ICellProvider
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        IntPtr GetCellPointer(int x, int y);
+        Cell* GetCellPointer(int x, int y);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void ResetCells();
     }

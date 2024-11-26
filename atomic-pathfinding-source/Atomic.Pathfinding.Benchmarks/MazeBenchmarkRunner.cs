@@ -1,4 +1,4 @@
-using Atomic.Pathfinding.Benchmarks.Maze;
+using Atomic.Pathfinding.Benchmarks.MazeBenchmarks;
 using BenchmarkDotNet.Attributes;
 
 namespace Atomic.Pathfinding.Benchmarks;

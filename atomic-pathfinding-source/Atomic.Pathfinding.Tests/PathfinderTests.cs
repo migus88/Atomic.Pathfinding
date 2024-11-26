@@ -12,13 +12,13 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void SingleAgent_AgentSize_Success_Test()
         {
-            var maze = new Maze<Cell>("Maze/Conditions/001.png");
+            var maze = new Maze("Maze/Conditions/001.png");
             
             var start = maze.Start;
             var destination = maze.Destination;
             var agent = new Agent { Size = 2 };
 
-            var aStar = new Pathfinder<Cell>(maze.Width, maze.Height);
+            var aStar = new Pathfinder(maze.Width, maze.Height);
             
 
             var result = aStar.GetPath(maze, agent, start, destination);
@@ -35,7 +35,7 @@ namespace Atomic.Pathfinding.Tests
         [Test]
         public void Cavern_Test()
         {
-            var maze = new Maze<Cell>("Maze/Conditions/000.gif");
+            var maze = new Maze("Maze/Conditions/000.gif");
             var start = new Coordinate(10, 10);
             var destination = new Coordinate(502, 374);
             
@@ -43,7 +43,7 @@ namespace Atomic.Pathfinding.Tests
             maze.SetDestination(destination);
             var agent = new Agent { Size = 1 };
 
-            var aStar = new Pathfinder<Cell>(maze.Width, maze.Height);
+            var aStar = new Pathfinder(maze.Width, maze.Height);
             
             //Jitting for more accurate stopwatch result
             aStar.GetPath(maze, agent, start, destination);
@@ -54,18 +54,6 @@ namespace Atomic.Pathfinding.Tests
             sw.Stop();
 
             Console.WriteLine($"Elapsed: {sw.ElapsedMilliseconds} ms");
-
-            var closedCount = 0;
-            foreach (var cell in maze.Cells)
-            {
-                if (cell.IsClosed)
-                {
-                    closedCount++;
-                    maze.SetClosed(cell.Coordinate);
-                }
-            }
-
-            Console.WriteLine($"Closed count: {closedCount}");
             
             if(result.IsPathFound)
             {

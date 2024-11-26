@@ -8,18 +8,19 @@ namespace Atomic.Pathfinding.Core.Data
 {
     public struct Cell : ICell
     {
-        public bool IsClosed { get; set; }
         public Coordinate Coordinate { get; set; }
-        public float ScoreF { get; set; }
-        public float ScoreH { get; set; }
-        public float ScoreG { get; set; }
-        public int Depth { get; set; }
         public bool IsWalkable { get; set; }
         public bool IsOccupied { get; set; }
         public float Weight { get; set; }
-        public Coordinate ParentCoordinate { get; set; }
-        public int QueueIndex { get; set; }
         
+        internal bool IsClosed { get; set; }
+        internal float ScoreF { get; set; }
+        internal float ScoreH { get; set; }
+        internal float ScoreG { get; set; }
+        internal int Depth { get; set; }
+        internal Coordinate ParentCoordinate { get; set; }
+        internal int QueueIndex { get; set; }
+    
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {

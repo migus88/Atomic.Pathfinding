@@ -8,16 +8,16 @@ using SkiaSharp;
 
 namespace Atomic.Pathfinding.Tools
 {
-    public class Maze<T> : ICellProvider where T : unmanaged, ICell
+    public class Maze : ICellProvider
     {
         public int Width { get; }
         public int Height { get; }
         public Coordinate Start { get; private set; }
         public Coordinate Destination { get; private set; }
-        public T[,] Cells => _cells;
+        public Cell[,] Cells => _cells;
 
         private SKBitmap _bitmap;
-        private T[,] _cells;
+        private Cell[,] _cells;
 
         public Maze(string path, bool createCells = true)
         {
@@ -43,7 +43,7 @@ namespace Atomic.Pathfinding.Tools
             }
         }
 
-        public Maze(T[,] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
+        public Maze(Cell[,] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
         {
             _cells = cells;
             Width = width;
@@ -55,11 +55,11 @@ namespace Atomic.Pathfinding.Tools
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe IntPtr GetCellPointer(int x, int y)
+        public unsafe Cell* GetCellPointer(int x, int y)
         {
-            fixed (T* ptr = &_cells[x, y])
+            fixed (Cell* ptr = &_cells[x, y])
             {
-                return (IntPtr)ptr;
+                return ptr;
             }
         }
 
@@ -178,7 +178,7 @@ namespace Atomic.Pathfinding.Tools
 
         public void CreateCells()
         {
-            _cells = new T[Width, Height];
+            _cells = new Cell[Width, Height];
             for (short y = 0; y < Height; y++)
             {
                 for (short x = 0; x < Width; x++)

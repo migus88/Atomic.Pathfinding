@@ -1,7 +1,6 @@
-using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Tools;
 
-namespace Atomic.Pathfinding.Benchmarks.Maze;
+namespace Atomic.Pathfinding.Benchmarks.MazeBenchmarks;
 
 public abstract class BaseMazeBenchmarkRunner : IMazeBenchmarkRunner
 {
@@ -9,11 +8,11 @@ public abstract class BaseMazeBenchmarkRunner : IMazeBenchmarkRunner
         
     protected abstract string ResultImageName { get; }
         
-    protected Maze<Cell> _maze;
+    protected Tools.Maze _maze;
 
-    public virtual void Init(Maze<Cell> maze)
+    public virtual void Init(Maze maze)
     {
-        _maze = maze ?? new Maze<Cell>("cavern.gif");
+        _maze = maze ?? new Maze("cavern.gif");
     }
 
     public abstract void FindPathBenchmark((int x, int y) start, (int x, int y) destination);

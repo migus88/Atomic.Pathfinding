@@ -1,23 +1,24 @@
+using System.Reflection;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tools;
 
-namespace Atomic.Pathfinding.Benchmarks.Maze;
+namespace Atomic.Pathfinding.Benchmarks.MazeBenchmarks;
 
 public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
 {
     protected override string ResultImageName => nameof(AtomicMazeBenchmarkRunner);
         
-    private Pathfinder<Cell> _pathfinder;
+    private Pathfinder _pathfinder;
     private IAgent _agent;
     private PathResult _result;
 
-    public override void Init(Maze<Cell> maze)
+    public override void Init(Maze maze)
     {
         base.Init(maze);
         _agent = new Agent();
-        _pathfinder = new Pathfinder<Cell>(_maze.Width, _maze.Height);
+        _pathfinder = new Pathfinder(_maze.Width, _maze.Height);
     }
 
     public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
@@ -38,10 +39,13 @@ public class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
         {
             return;
         }
-            
+        
+        
+        var propertyInfo = typeof(Cell).GetProperty("IsClosed", BindingFlags.NonPublic | BindingFlags.Instance);
+        
         foreach (var cell in _maze.Cells)
         {
-            if (cell.IsClosed)
+            if ((bool)(propertyInfo?.GetValue(cell) ?? false))
             {
                 _maze.SetClosed(cell.Coordinate);
             }

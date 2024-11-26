@@ -13,13 +13,13 @@ namespace Demo
         [SerializeField] private Vector2Int _fieldSize;
         [SerializeField] private FieldCell[] _fieldCells;
 
-        private Pathfinder<Cell> _pathfinder;
+        private Pathfinder _pathfinder;
         private FieldCell[,] _field; // We can skip it and use _fieldCells array with Linq, but this is more performant
         private bool _isMoving;
         
         private void Start()
         {
-            _pathfinder = new Pathfinder<Cell>(_fieldSize.x, _fieldSize.y);
+            _pathfinder = new Pathfinder(_fieldSize.x, _fieldSize.y);
             _field = new FieldCell[_fieldSize.x, _fieldSize.y];
             
             foreach (var fieldCell in _fieldCells)
@@ -71,11 +71,11 @@ namespace Demo
         
         #region ICellProvider<Cell> implementation
         
-        public unsafe IntPtr GetCellPointer(int x, int y)
+        public unsafe Cell* GetCellPointer(int x, int y)
         {
             fixed (Cell* cellPtr = &_field[x, y].Cell)
             {
-                return (IntPtr)cellPtr;
+                return cellPtr;
             }
         }
 
