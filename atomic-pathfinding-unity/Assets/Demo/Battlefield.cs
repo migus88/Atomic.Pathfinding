@@ -1,13 +1,13 @@
+using System;
 using System.Collections;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
-using Atomic.Pathfinding.Core.Internal;
 using UnityEngine;
 
 namespace Demo
 {
-    public class Battlefield : MonoBehaviour, ICellProvider<Cell>
+    public class Battlefield : MonoBehaviour, ICellProvider
     {
         [SerializeField] private Player _player;
         [SerializeField] private Vector2Int _fieldSize;
@@ -17,18 +17,16 @@ namespace Demo
         private FieldCell[,] _field; // We can skip it and use _fieldCells array with Linq, but this is more performant
         private bool _isMoving;
         
-        private void Awake()
+        private void Start()
         {
-            var pq = new FastPriorityQueue<Cell>(10);
+            _pathfinder = new Pathfinder<Cell>(_fieldSize.x, _fieldSize.y);
+            _field = new FieldCell[_fieldSize.x, _fieldSize.y];
             
-            //_pathfinder = new Pathfinder<Cell>(_fieldSize.x, _fieldSize.y);
-            //_field = new FieldCell[_fieldSize.x, _fieldSize.y];
-            
-            //foreach (var fieldCell in _fieldCells)
-            //{
-            //    fieldCell.CellClicked += OnCellClicked;
-            //    _field[fieldCell.Cell.Coordinate.X, fieldCell.Cell.Coordinate.Y] = fieldCell;
-            //}
+            foreach (var fieldCell in _fieldCells)
+            {
+                fieldCell.CellClicked += OnCellClicked;
+                _field[fieldCell.Cell.Coordinate.X, fieldCell.Cell.Coordinate.Y] = fieldCell;
+            }
         }
 
         private void OnCellClicked(FieldCell clickedCell)
@@ -53,29 +51,31 @@ namespace Demo
             
             foreach (var coordinate in path)
             {
-                var waypoint = _field[coordinate.X, coordinate.Y].transform.position;
+                var cell = _field[coordinate.X, coordinate.Y];
+                var cellPosition = cell.transform.position;
+                var waypoint = new Vector3(cellPosition.x, _player.transform.position.y, cellPosition.z);
                 
-                while (Vector3.Distance(transform.position, waypoint) > 0.01f)
+                while (Vector3.Distance(_player.transform.position, waypoint) > 0.01f)
                 {
-                    transform.position = Vector3.Lerp(transform.position, waypoint, _player.Speed * Time.deltaTime);
+                    _player.transform.position = Vector3.Lerp(_player.transform.position, waypoint, _player.Speed * Time.deltaTime);
 
                     yield return null;
                 }
 
-                transform.position = waypoint;
+                _player.transform.position = waypoint;
+                _player.Coordinate = cell.Cell.Coordinate;
             }
             
             _isMoving = false;
         }
-
         
         #region ICellProvider<Cell> implementation
         
-        public unsafe Cell* GetCellPointer(int x, int y)
+        public unsafe IntPtr GetCellPointer(int x, int y)
         {
             fixed (Cell* cellPtr = &_field[x, y].Cell)
             {
-                return cellPtr;
+                return (IntPtr)cellPtr;
             }
         }
 
@@ -86,11 +86,32 @@ namespace Demo
                 for (var y = 0; y < _fieldSize.y; y++)
                 {
                     ref var cell = ref _field[x, y];
+                    
+                    if (cell == null)
+                    {
+                        continue;
+                    }
                     cell.Cell.Reset();
                 }
             }
         }
 
         #endregion
+
+        private void OnDestroy()
+        {
+            if (_fieldCells == null)
+            {
+                return;
+            }
+            
+            foreach (var fieldCell in _fieldCells)
+            {
+                if(fieldCell)
+                {
+                    fieldCell.CellClicked -= OnCellClicked;
+                }
+            }
+        }
     }
 }
