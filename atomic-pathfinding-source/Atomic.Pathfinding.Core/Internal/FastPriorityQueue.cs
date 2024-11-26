@@ -9,12 +9,12 @@ namespace Atomic.Pathfinding.Core.Internal
     {
         public int Count { get; private set; }
 
-        private readonly T*[] _collection;
+        private readonly IntPtr[] _collection;
 
         public FastPriorityQueue(int maxNodes)
         {
             Count = 0;
-            _collection = new T*[maxNodes + 1];
+            _collection = new IntPtr[maxNodes + 1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22,7 +22,7 @@ namespace Atomic.Pathfinding.Core.Internal
         {
             item->ScoreF = priority;
             Count++;
-            _collection[Count] = item;
+            _collection[Count] = (IntPtr)item;
             item->QueueIndex = Count;
             CascadeUp(item);
         }
@@ -34,26 +34,26 @@ namespace Atomic.Pathfinding.Core.Internal
 
             if (Count == 1)
             {
-                _collection[1] = null;
+                _collection[1] = default;
                 Count = 0;
 
-                return result;
+                return (T*)result;
             }
 
-            var formerLastNode = _collection[Count];
-            _collection[1] = formerLastNode;
+            var formerLastNode = (T*)_collection[Count];
+            _collection[1] = (IntPtr)formerLastNode;
             formerLastNode->QueueIndex = 1;
-            _collection[Count] = null;
+            _collection[Count] = default;
             Count--;
 
             CascadeDown(formerLastNode);
-            return result;
+            return (T*)result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T* item)
         {
-            return _collection[item->QueueIndex] == item;
+            return _collection[item->QueueIndex] == (IntPtr)item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,12 +74,12 @@ namespace Atomic.Pathfinding.Core.Internal
                 parentIndex = item->QueueIndex >> 1;
                 var parentNode = _collection[parentIndex];
 
-                if (HasHigherOrEqualPriority(parentNode, item))
+                if (HasHigherOrEqualPriority((T*)parentNode, item))
                     return;
 
                 //Node has lower priority value, so move parent down the heap to make room
                 _collection[item->QueueIndex] = parentNode;
-                parentNode->QueueIndex = item->QueueIndex;
+                ((T*)parentNode)->QueueIndex = item->QueueIndex;
 
                 item->QueueIndex = parentIndex;
             }
@@ -93,17 +93,17 @@ namespace Atomic.Pathfinding.Core.Internal
                 parentIndex >>= 1;
                 var parentNode = _collection[parentIndex];
 
-                if (HasHigherOrEqualPriority(parentNode, item))
+                if (HasHigherOrEqualPriority((T*)parentNode, item))
                     break;
 
                 //Node has lower priority value, so move parent down the heap to make room
                 _collection[item->QueueIndex] = parentNode;
-                parentNode->QueueIndex = item->QueueIndex;
+                ((T*)parentNode)->QueueIndex = item->QueueIndex;
 
                 item->QueueIndex = parentIndex;
             }
 
-            _collection[item->QueueIndex] = item;
+            _collection[item->QueueIndex] = (IntPtr)item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -120,15 +120,15 @@ namespace Atomic.Pathfinding.Core.Internal
             var childRightIndex = childLeftIndex + 1;
             var childLeft = _collection[childLeftIndex];
 
-            if (HasHigherPriority(childLeft, item))
+            if (HasHigherPriority((T*)childLeft, item))
             {
                 // Check if there is a right child. If not, swap and finish.
                 if (childRightIndex > Count)
                 {
                     item->QueueIndex = childLeftIndex;
-                    childLeft->QueueIndex = finalQueueIndex;
+                    ((T*)childLeft)->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childLeft;
-                    _collection[childLeftIndex] = item;
+                    _collection[childLeftIndex] = (IntPtr)item;
 
                     return;
                 }
@@ -136,17 +136,17 @@ namespace Atomic.Pathfinding.Core.Internal
                 // Check if the left-child is higher-priority than the right-child
                 var childRight = _collection[childRightIndex];
 
-                if (HasHigherPriority(childLeft, childRight))
+                if (HasHigherPriority((T*)childLeft, (T*)childRight))
                 {
                     // left is highest, move it up and continue
-                    childLeft->QueueIndex = finalQueueIndex;
+                    ((T*)childLeft)->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childLeft;
                     finalQueueIndex = childLeftIndex;
                 }
                 else
                 {
                     // right is even higher, move it up and continue
-                    childRight->QueueIndex = finalQueueIndex;
+                    ((T*)childRight)->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childRight;
                     finalQueueIndex = childRightIndex;
                 }
@@ -161,9 +161,9 @@ namespace Atomic.Pathfinding.Core.Internal
                 // Check if the right-child is higher-priority than the current node
                 var childRight = _collection[childRightIndex];
 
-                if (HasHigherPriority(childRight, item))
+                if (HasHigherPriority((T*)childRight, item))
                 {
-                    childRight->QueueIndex = finalQueueIndex;
+                    ((T*)childRight)->QueueIndex = finalQueueIndex;
                     _collection[finalQueueIndex] = childRight;
                     finalQueueIndex = childRightIndex;
                 }
@@ -182,7 +182,7 @@ namespace Atomic.Pathfinding.Core.Internal
                 if (childLeftIndex > Count)
                 {
                     item->QueueIndex = finalQueueIndex;
-                    _collection[finalQueueIndex] = item;
+                    _collection[finalQueueIndex] = (IntPtr)item;
 
                     break;
                 }
@@ -191,15 +191,15 @@ namespace Atomic.Pathfinding.Core.Internal
                 childRightIndex = childLeftIndex + 1;
                 childLeft = _collection[childLeftIndex];
 
-                if (HasHigherPriority(childLeft, item))
+                if (HasHigherPriority((T*)childLeft, item))
                 {
                     // Check if there is a right child. If not, swap and finish.
                     if (childRightIndex > Count)
                     {
                         item->QueueIndex = childLeftIndex;
-                        childLeft->QueueIndex = finalQueueIndex;
+                        ((T*)childLeft)->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childLeft;
-                        _collection[childLeftIndex] = item;
+                        _collection[childLeftIndex] = (IntPtr)item;
 
                         break;
                     }
@@ -207,17 +207,17 @@ namespace Atomic.Pathfinding.Core.Internal
                     // Check if the left-child is higher-priority than the right-child
                     var childRight = _collection[childRightIndex];
 
-                    if (HasHigherPriority(childLeft, childRight))
+                    if (HasHigherPriority((T*)childLeft, (T*)childRight))
                     {
                         // left is highest, move it up and continue
-                        childLeft->QueueIndex = finalQueueIndex;
+                        ((T*)childLeft)->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childLeft;
                         finalQueueIndex = childLeftIndex;
                     }
                     else
                     {
                         // right is even higher, move it up and continue
-                        childRight->QueueIndex = finalQueueIndex;
+                        ((T*)childRight)->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childRight;
                         finalQueueIndex = childRightIndex;
                     }
@@ -226,7 +226,7 @@ namespace Atomic.Pathfinding.Core.Internal
                 else if (childRightIndex > Count)
                 {
                     item->QueueIndex = finalQueueIndex;
-                    _collection[finalQueueIndex] = item;
+                    _collection[finalQueueIndex] = (IntPtr)item;
 
                     break;
                 }
@@ -235,9 +235,9 @@ namespace Atomic.Pathfinding.Core.Internal
                     // Check if the right-child is higher-priority than the current node
                     var childRight = _collection[childRightIndex];
 
-                    if (HasHigherPriority(childRight, item))
+                    if (HasHigherPriority((T*)childRight, item))
                     {
-                        childRight->QueueIndex = finalQueueIndex;
+                        ((T*)childRight)->QueueIndex = finalQueueIndex;
                         _collection[finalQueueIndex] = childRight;
                         finalQueueIndex = childRightIndex;
                     }
@@ -245,7 +245,7 @@ namespace Atomic.Pathfinding.Core.Internal
                     else
                     {
                         item->QueueIndex = finalQueueIndex;
-                        _collection[finalQueueIndex] = item;
+                        _collection[finalQueueIndex] = (IntPtr)item;
 
                         break;
                     }

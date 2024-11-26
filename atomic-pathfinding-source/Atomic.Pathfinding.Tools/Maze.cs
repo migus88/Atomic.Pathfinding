@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,7 @@ using SkiaSharp;
 
 namespace Atomic.Pathfinding.Tools
 {
-    public class Maze<T> : ICellProvider<T> where T : unmanaged, ICell
+    public class Maze<T> : ICellProvider where T : unmanaged, ICell
     {
         public int Width { get; }
         public int Height { get; }
@@ -54,11 +55,11 @@ namespace Atomic.Pathfinding.Tools
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe T* GetCellPointer(int x, int y)
+        public unsafe IntPtr GetCellPointer(int x, int y)
         {
             fixed (T* ptr = &_cells[x, y])
             {
-                return ptr;
+                return (IntPtr)ptr;
             }
         }
 
