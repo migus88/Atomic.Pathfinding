@@ -52,7 +52,7 @@ namespace Atomic.Pathfinding.Core
 
                 current->IsClosed = true;
 
-                PopulateNeighbors(current, agent.Size, ref neighbors);
+                PopulateNeighbors(current, agent.Size, neighbors);
 
                 foreach (var neighborPtr in neighbors)
                 {
@@ -131,14 +131,14 @@ namespace Atomic.Pathfinding.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopulateNeighbors(Cell* current, int agentSize, ref Cell*[] neighbors)
+        private void PopulateNeighbors(Cell* current, int agentSize, Cell*[] neighbors)
         {
             var position = current->Coordinate;
 
-            PopulateNeighbor(position.X - 1, position.Y, agentSize, ref neighbors, West);
-            PopulateNeighbor(position.X + 1, position.Y, agentSize, ref neighbors, East);
-            PopulateNeighbor(position.X, position.Y + 1, agentSize, ref neighbors, South);
-            PopulateNeighbor(position.X, position.Y - 1, agentSize, ref neighbors, North);
+            PopulateNeighbor(position.X - 1, position.Y, agentSize, neighbors, West);
+            PopulateNeighbor(position.X + 1, position.Y, agentSize, neighbors, East);
+            PopulateNeighbor(position.X, position.Y + 1, agentSize, neighbors, South);
+            PopulateNeighbor(position.X, position.Y - 1, agentSize, neighbors, North);
 
             if (!_settings.IsDiagonalMovementEnabled)
             {
@@ -156,18 +156,18 @@ namespace Atomic.Pathfinding.Core
             var canGoNorth = neighbors[North] != null;
             var isCornersCutAllowed = _settings.IsMovementBetweenCornersEnabled;
 
-            PopulateNeighbor(position.X - 1, position.Y + 1, agentSize, ref neighbors, SouthWest,
+            PopulateNeighbor(position.X - 1, position.Y + 1, agentSize, neighbors, SouthWest,
                 canGoWest || canGoSouth || isCornersCutAllowed);
-            PopulateNeighbor(position.X - 1, position.Y - 1, agentSize, ref neighbors, NorthWest,
+            PopulateNeighbor(position.X - 1, position.Y - 1, agentSize, neighbors, NorthWest,
                 canGoWest || canGoNorth || isCornersCutAllowed);
-            PopulateNeighbor(position.X + 1, position.Y + 1, agentSize, ref neighbors, SouthEast,
+            PopulateNeighbor(position.X + 1, position.Y + 1, agentSize, neighbors, SouthEast,
                 canGoEast || canGoSouth || isCornersCutAllowed);
-            PopulateNeighbor(position.X + 1, position.Y - 1, agentSize, ref neighbors, NorthEast,
+            PopulateNeighbor(position.X + 1, position.Y - 1, agentSize, neighbors, NorthEast,
                 canGoEast || canGoNorth || isCornersCutAllowed);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopulateNeighbor(int x, int y, int agentSize, ref Cell*[] neighbors,
+        private void PopulateNeighbor(int x, int y, int agentSize, Cell*[] neighbors,
             int neighborIndex, bool shouldPopulate = true)
         {
             if (!shouldPopulate)
