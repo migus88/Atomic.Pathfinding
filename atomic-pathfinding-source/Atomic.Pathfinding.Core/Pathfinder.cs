@@ -12,12 +12,12 @@ namespace Atomic.Pathfinding.Core
         private const int MaxNeighbors = 8;
         private const int SingleCellAgentSize = 1;
 
-        private readonly PathfinderSettings _settings;
+        private readonly IPathfinderSettings _settings;
         private readonly ICellProvider _cellProvider;
 
         private readonly FastPriorityQueue _openSet;
 
-        public Pathfinder(ICellProvider cellProvider, PathfinderSettings settings = null)
+        public Pathfinder(ICellProvider cellProvider, IPathfinderSettings settings = null)
         {
             _cellProvider = cellProvider;
             _settings = settings ?? new PathfinderSettings();

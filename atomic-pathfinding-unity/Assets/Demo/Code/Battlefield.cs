@@ -3,6 +3,7 @@ using System.Collections;
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
+using Code.Settings;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -18,7 +19,8 @@ namespace Demo
         public Pathfinder Pathfinder { get; private set; }
         
         public event Action<Cell> CellClicked;
-        
+
+        [SerializeField] private ScriptablePathfinderSettings _settings;
         [SerializeField] private Player _player;
         [SerializeField] private Vector2Int _fieldSize;
         [SerializeField] private FieldCell[] _fieldCells;
@@ -38,7 +40,7 @@ namespace Demo
 
         private void Start()
         {
-            Pathfinder = new Pathfinder(this);
+            Pathfinder = new Pathfinder(this, _settings);
             Array.Sort(_fieldCells, Utils.FieldCellComparison);
             
             foreach (var fieldCell in _fieldCells)

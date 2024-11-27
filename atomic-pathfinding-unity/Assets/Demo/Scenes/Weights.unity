@@ -2741,6 +2741,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c306d092167490cbef819a80efb3ae0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _settings: {fileID: 11400000, guid: 92c0a9682eda8438eb611eae2267a2db, type: 2}
   _player: {fileID: 464323082}
   _fieldSize: {x: 6, y: 5}
   _fieldCells:
