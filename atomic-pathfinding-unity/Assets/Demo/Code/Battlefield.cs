@@ -14,18 +14,16 @@ namespace Demo
         [SerializeField] private FieldCell[] _fieldCells;
 
         private Pathfinder _pathfinder;
-        private FieldCell[,] _field; // We can skip it and use _fieldCells array with Linq, but this is more performant
         private bool _isMoving;
         
         private void Start()
         {
-            _pathfinder = new Pathfinder(_fieldSize.x, _fieldSize.y);
-            _field = new FieldCell[_fieldSize.x, _fieldSize.y];
+            _pathfinder = new Pathfinder(this);
+            Array.Sort(_fieldCells, FieldCellComparison);
             
             foreach (var fieldCell in _fieldCells)
             {
                 fieldCell.CellClicked += OnCellClicked;
-                _field[fieldCell.Cell.Coordinate.X, fieldCell.Cell.Coordinate.Y] = fieldCell;
             }
         }
 
@@ -37,12 +35,18 @@ namespace Demo
             }
             
             var destination = clickedCell.Cell.Coordinate;
-            var pathResult = _pathfinder.GetPath(this, _player, _player.Coordinate, destination);
+            var pathResult = _pathfinder.GetPath(_player, _player.Coordinate, destination);
             
             if(pathResult.IsPathFound)
             {
                 StartCoroutine(MoveToPoint(pathResult.Path));
             }
+        }    
+        
+        private static int FieldCellComparison(FieldCell a, FieldCell b)
+        {
+            var result = a.Cell.Coordinate.Y.CompareTo(b.Cell.Coordinate.Y);
+            return result == 0 ? a.Cell.Coordinate.X.CompareTo(b.Cell.Coordinate.X) : result;
         }
         
         private IEnumerator MoveToPoint(Coordinate[] path)
@@ -51,7 +55,8 @@ namespace Demo
             
             foreach (var coordinate in path)
             {
-                var cell = _field[coordinate.X, coordinate.Y];
+                var index = GetFieldIndex(coordinate.X, coordinate.Y);
+                var cell = _fieldCells[index];
                 var cellPosition = cell.transform.position;
                 var waypoint = new Vector3(cellPosition.x, _player.transform.position.y, cellPosition.z);
                 
@@ -69,11 +74,15 @@ namespace Demo
             _isMoving = false;
         }
         
-        #region ICellProvider<Cell> implementation
+        #region ICellProvider implementation
+
+        public int Width => _fieldSize.x;
+        public int Height => _fieldSize.y;
         
         public unsafe Cell* GetCellPointer(int x, int y)
         {
-            fixed (Cell* cellPtr = &_field[x, y].Cell)
+            var index = GetFieldIndex(x, y);
+            fixed (Cell* cellPtr = &_fieldCells[index].Cell)
             {
                 return cellPtr;
             }
@@ -85,7 +94,8 @@ namespace Demo
             {
                 for (var y = 0; y < _fieldSize.y; y++)
                 {
-                    ref var cell = ref _field[x, y];
+                    var index = GetFieldIndex(x, y);
+                    ref var cell = ref _fieldCells[index];
                     
                     if (cell == null)
                     {
@@ -96,7 +106,20 @@ namespace Demo
             }
         }
 
+
         #endregion
+
+        private int GetFieldIndex(int column, int row)
+        {
+            var index = row * _fieldSize.x + column;
+                
+            if (index >= _fieldCells.Length || row < 0 || column < 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
+                
+            return index;
+        }
 
         private void OnDestroy()
         {
