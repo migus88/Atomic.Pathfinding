@@ -6,6 +6,7 @@ namespace Demo
 {
     public class FieldCell : MonoBehaviour
     {
+        // Notice that this is a field and not a property in order to grab its pointer.
         public Cell Cell;
         
         public event Action<FieldCell> CellClicked;

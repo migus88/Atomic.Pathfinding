@@ -12,11 +12,5 @@ namespace Atomic.Pathfinding.Core.Interfaces
         /// ◻◻◻<br/>
         /// </summary>
         int Size { get; }
-
-        /// <summary>
-        /// Triggered when a path is requested and found in a new thread.
-        /// </summary>
-        /// <param name="result">Requested path</param>
-        void OnPathResult(PathResult result);
     }
 }

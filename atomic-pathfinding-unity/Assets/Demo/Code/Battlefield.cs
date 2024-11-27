@@ -9,73 +9,67 @@ namespace Demo
 {
     public class Battlefield : MonoBehaviour, ICellProvider
     {
+        // In a real project, please use a DI container to manage the dependencies and not this...
+        // I'm using a singleton here in order to not add 3rd party dependencies to the project
+        // just for the sake of this demo
+        public static Battlefield Instance { get; private set; }
+        
+        public Pathfinder Pathfinder { get; private set; }
+        
+        public event Action<Cell> CellClicked;
+        
         [SerializeField] private Player _player;
         [SerializeField] private Vector2Int _fieldSize;
         [SerializeField] private FieldCell[] _fieldCells;
-
-        private Pathfinder _pathfinder;
-        private bool _isMoving;
         
+        
+        private void Awake()
+        {
+            // 🤮
+            if(Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
         private void Start()
         {
-            _pathfinder = new Pathfinder(this);
-            Array.Sort(_fieldCells, FieldCellComparison);
+            Pathfinder = new Pathfinder(this);
+            Array.Sort(_fieldCells, Utils.FieldCellComparison);
             
             foreach (var fieldCell in _fieldCells)
             {
                 fieldCell.CellClicked += OnCellClicked;
             }
-        }
+        }  
 
-        private void OnCellClicked(FieldCell clickedCell)
+        public int GetFieldIndex(int column, int row)
         {
-            if (_isMoving)
-            {
-                return;
-            }
-            
-            var destination = clickedCell.Cell.Coordinate;
-            var pathResult = _pathfinder.GetPath(_player, _player.Coordinate, destination);
-            
-            if(pathResult.IsPathFound)
-            {
-                StartCoroutine(MoveToPoint(pathResult.Path));
-            }
-        }    
-        
-        private static int FieldCellComparison(FieldCell a, FieldCell b)
-        {
-            var result = a.Cell.Coordinate.Y.CompareTo(b.Cell.Coordinate.Y);
-            return result == 0 ? a.Cell.Coordinate.X.CompareTo(b.Cell.Coordinate.X) : result;
-        }
-        
-        private IEnumerator MoveToPoint(Coordinate[] path)
-        {
-            _isMoving = true;
-            
-            foreach (var coordinate in path)
-            {
-                var index = GetFieldIndex(coordinate.X, coordinate.Y);
-                var cell = _fieldCells[index];
-                var cellPosition = cell.transform.position;
-                var waypoint = new Vector3(cellPosition.x, _player.transform.position.y, cellPosition.z);
+            var index = row * _fieldSize.x + column;
                 
-                while (Vector3.Distance(_player.transform.position, waypoint) > 0.01f)
-                {
-                    _player.transform.position = Vector3.Lerp(_player.transform.position, waypoint, _player.Speed * Time.deltaTime);
-
-                    yield return null;
-                }
-
-                _player.transform.position = waypoint;
-                _player.Coordinate = cell.Cell.Coordinate;
+            if (index >= _fieldCells.Length || row < 0 || column < 0)
+            {
+                throw new IndexOutOfRangeException();
             }
-            
-            _isMoving = false;
+                
+            return index;
+        }        
+        
+        public FieldCell GetFieldCell(int x, int y)
+        {
+            var index = GetFieldIndex(x, y);
+            return _fieldCells[index];
         }
         
+        
+        // Basically here's the magic happens. This will allow the pathfinder to do its thing.
+        // Everything else is just a demo setup.
         #region ICellProvider implementation
-
+        
         public int Width => _fieldSize.x;
         public int Height => _fieldSize.y;
         
@@ -90,36 +84,19 @@ namespace Demo
 
         public void ResetCells()
         {
-            for (var x = 0; x < _fieldSize.x; x++)
+            foreach (var fieldCell in _fieldCells)
             {
-                for (var y = 0; y < _fieldSize.y; y++)
-                {
-                    var index = GetFieldIndex(x, y);
-                    ref var cell = ref _fieldCells[index];
-                    
-                    if (cell == null)
-                    {
-                        continue;
-                    }
-                    cell.Cell.Reset();
-                }
+                fieldCell.Cell.Reset();
             }
         }
 
 
         #endregion
 
-        private int GetFieldIndex(int column, int row)
+        private void OnCellClicked(FieldCell clickedCell)
         {
-            var index = row * _fieldSize.x + column;
-                
-            if (index >= _fieldCells.Length || row < 0 || column < 0)
-            {
-                throw new IndexOutOfRangeException();
-            }
-                
-            return index;
-        }
+            CellClicked?.Invoke(clickedCell.Cell);
+        }  
 
         private void OnDestroy()
         {
