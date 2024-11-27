@@ -45,9 +45,9 @@ namespace Demo
             {
                 fieldCell.CellClicked += OnCellClicked;
             }
-        }  
+        }
 
-        public int GetFieldIndex(int column, int row)
+        private int GetFieldIndex(int column, int row)
         {
             var index = row * _fieldSize.x + column;
                 
