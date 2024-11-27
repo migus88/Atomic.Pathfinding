@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9660ad3ccf0e4a0d8ea4302baf4a372d, type: 3}
-  m_Name: PathfinderSettings
+  m_Name: BetweenCornersPathfinderSettings
   m_EditorClassIdentifier: 
   <IsDiagonalMovementEnabled>k__BackingField: 1
   <IsCalculatingOccupiedCells>k__BackingField: 1
-  <IsMovementBetweenCornersEnabled>k__BackingField: 0
+  <IsMovementBetweenCornersEnabled>k__BackingField: 1
   <IsCellWeightEnabled>k__BackingField: 1
   <StraightMovementMultiplier>k__BackingField: 1
   <DiagonalMovementMultiplier>k__BackingField: 1.41
