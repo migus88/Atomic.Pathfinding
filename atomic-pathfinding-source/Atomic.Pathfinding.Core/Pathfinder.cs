@@ -12,15 +12,20 @@ namespace Atomic.Pathfinding.Core
         private const int MaxNeighbors = 8;
         private const int SingleCellAgentSize = 1;
 
-        private readonly IPathfinderSettings _settings;
+        private readonly FastPathfinderSettings _settings;
         private readonly ICellProvider _cellProvider;
-
         private readonly FastPriorityQueue _openSet;
+        private readonly int _width;
+        private readonly int _height;
 
         public Pathfinder(ICellProvider cellProvider, IPathfinderSettings settings = null)
         {
             _cellProvider = cellProvider;
-            _settings = settings ?? new PathfinderSettings();
+            
+            _width = _cellProvider.Width;
+            _height = _cellProvider.Height;
+            
+            _settings = FastPathfinderSettings.FromSettings(settings ?? new PathfinderSettings());
 
             _openSet = new FastPriorityQueue(_cellProvider.Width * _cellProvider.Height);
         }
@@ -40,6 +45,7 @@ namespace Atomic.Pathfinding.Core
             _openSet.Enqueue(current, scoreH); //ScoreF set by the queue
 
             var neighbors = new Cell*[MaxNeighbors];
+            var agentSize = agent.Size;
 
             while (_openSet.Count > 0)
             {
@@ -52,7 +58,7 @@ namespace Atomic.Pathfinding.Core
 
                 current->IsClosed = true;
 
-                PopulateNeighbors(current, agent.Size, neighbors);
+                PopulateNeighbors(current, agentSize, neighbors);
 
                 foreach (var neighborPtr in neighbors)
                 {
@@ -230,7 +236,7 @@ namespace Atomic.Pathfinding.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsPositionValid(int x, int y)
         {
-            return x >= 0 && x < _cellProvider.Width && y >= 0 && y < _cellProvider.Height;
+            return x >= 0 && x < _width && y >= 0 && y < _height;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

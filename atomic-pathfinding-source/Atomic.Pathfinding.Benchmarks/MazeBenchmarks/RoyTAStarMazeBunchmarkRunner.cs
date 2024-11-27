@@ -71,18 +71,21 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
     private void PopulateNodes()
     {
         var cells = _maze.Cells;
+        
+        var height = _maze.Height;
+        var width = _maze.Width;
             
-        for (var y = 0; y < _maze.Height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < _maze.Width; x++)
+            for (var x = 0; x < width; x++)
             {
                 _nodes[x, y] = new Node(new Position(x, y));
             }
         }
             
-        for (var y = 0; y < _maze.Height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < _maze.Width; x++)
+            for (var x = 0; x < width; x++)
             {
                 Connect(x, y, cells);
             }
@@ -106,11 +109,14 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
         };
 
         var velocity = Velocity.FromMetersPerSecond(1);
+        
+        var height = _maze.Height;
+        var width = _maze.Width;
 
         foreach (var neighbor in neighbors)
         {
-            if (neighbor.Item1 < 0 || neighbor.Item1 >= _maze.Width || neighbor.Item2 < 0 ||
-                neighbor.Item2 >= _maze.Height)
+            if (neighbor.Item1 < 0 || neighbor.Item1 >= width || neighbor.Item2 < 0 ||
+                neighbor.Item2 >= height)
             {
                 continue;
             }

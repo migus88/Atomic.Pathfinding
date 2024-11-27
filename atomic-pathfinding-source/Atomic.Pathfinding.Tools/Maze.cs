@@ -2,30 +2,37 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
 using SkiaSharp;
 
 namespace Atomic.Pathfinding.Tools
 {
-    public class Maze : ICellProvider
+    public unsafe class Maze : ICellProvider
     {
-        public int Width { get; }
-        public int Height { get; }
+        public int Width => _width;
+        public int Height => _height;
         public Coordinate Start { get; private set; }
         public Coordinate Destination { get; private set; }
         public Cell[,] Cells => _cells;
 
         private SKBitmap _bitmap;
         private Cell[,] _cells;
+        private Cell* _cellsPtr;
+        
+        private readonly int _size;
+        private readonly int _width;
+        private readonly int _height;
 
         public Maze(string path, bool createCells = true)
         {
             var file = File.ReadAllBytes(path);
 
             var bitmap = SKBitmap.Decode(file);
-            Width = bitmap.Width;
-            Height = bitmap.Height;
+            _width = bitmap.Width;
+            _height = bitmap.Height;
+            _size = Width * Height;
 
             _bitmap = new SKBitmap(Width, Height);
 
@@ -46,33 +53,28 @@ namespace Atomic.Pathfinding.Tools
         public Maze(Cell[,] cells, int width, int height, Coordinate start = default, Coordinate destination = default)
         {
             _cells = cells;
-            Width = width;
-            Height = height;
+            _width = width;
+            _height = height;
             Start = start;
             Destination = destination;
+            _size = Width * Height;
 
             CreateBitmap();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Cell* GetCellPointer(int x, int y)
+        public Cell* GetCellPointer(int x, int y)
         {
-            fixed (Cell* ptr = &_cells[x, y])
-            {
-                return ptr;
-            }
+            return _cellsPtr + (x * _height) + y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetCells()
         {
-            for (var x = 0; x < Width; x++)
+            Span<Cell> span = MemoryMarshal.CreateSpan(ref _cells[0, 0], _size);
+            foreach (ref var cell in span)
             {
-                for (var y = 0; y < Height; y++)
-                {
-                    ref var cell = ref _cells[x, y];
-                    cell.Reset();
-                }
+                cell.Reset();
             }
         }
 
@@ -179,6 +181,12 @@ namespace Atomic.Pathfinding.Tools
         public void CreateCells()
         {
             _cells = new Cell[Width, Height];
+            
+            fixed(Cell* ptr = _cells)
+            {
+                _cellsPtr = ptr;
+            }
+            
             for (short y = 0; y < Height; y++)
             {
                 for (short x = 0; x < Width; x++)
