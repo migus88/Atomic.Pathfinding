@@ -46,8 +46,7 @@ namespace Demo
             foreach (var coordinate in path)
             {
                 var cell = Battlefield.Instance.GetFieldCell(coordinate.X, coordinate.Y);
-                var cellPosition = cell.transform.position;
-                var waypoint = new Vector3(cellPosition.x, transform.position.y, cellPosition.z);
+                var waypoint = cell.transform.position;
                 
                 while (Vector3.Distance(transform.position, waypoint) > 0.01f)
                 {

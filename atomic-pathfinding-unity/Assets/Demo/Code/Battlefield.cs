@@ -4,6 +4,7 @@ using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Demo
 {
@@ -21,7 +22,6 @@ namespace Demo
         [SerializeField] private Player _player;
         [SerializeField] private Vector2Int _fieldSize;
         [SerializeField] private FieldCell[] _fieldCells;
-        
         
         private void Awake()
         {
@@ -46,6 +46,26 @@ namespace Demo
                 fieldCell.CellClicked += OnCellClicked;
             }
         }
+
+#if UNITY_EDITOR
+        [ContextMenu("Randomize Weight")]
+        public void RandomizeWeight()
+        {
+            foreach (var cell in _fieldCells)
+            {
+                cell.SetWeight(Random.Range(1f,10f));
+            }
+        }
+
+        [ContextMenu("Visualize Weights")]
+        public void VisualizeWeights()
+        {
+            foreach (var cell in _fieldCells)
+            {
+                cell.VisualizeWeight();
+            }
+        }
+#endif
 
         private int GetFieldIndex(int column, int row)
         {
