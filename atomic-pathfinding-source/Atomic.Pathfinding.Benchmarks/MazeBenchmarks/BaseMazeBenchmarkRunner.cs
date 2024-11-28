@@ -15,7 +15,7 @@ public abstract class BaseMazeBenchmarkRunner : IMazeBenchmarkRunner
         _maze = maze ?? new Maze("cavern.gif");
     }
 
-    public abstract void FindPathBenchmark((int x, int y) start, (int x, int y) destination);
+    public abstract void FindPath((int x, int y) start, (int x, int y) destination);
 
     public abstract void RenderPath((int x, int y) start, (int x, int y) destination);
 

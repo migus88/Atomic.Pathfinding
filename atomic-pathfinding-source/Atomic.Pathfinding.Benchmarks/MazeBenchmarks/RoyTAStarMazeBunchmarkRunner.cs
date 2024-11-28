@@ -28,7 +28,7 @@ public class RoyTAStarMazeBunchmarkRunner : BaseMazeBenchmarkRunner
         _grid = Grid.CreateGridFrom2DArrayOfNodes(_nodes);
     }
 
-    public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
+    public override void FindPath((int x, int y) start, (int x, int y) destination)
     {
         _path = GetPath(start, destination);
     }

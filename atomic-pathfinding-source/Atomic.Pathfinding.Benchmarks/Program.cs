@@ -4,9 +4,6 @@ using BenchmarkDotNet.Running;
 
 if(args.Length > 0 && args[0] == "profile")
 {
-    Console.WriteLine("Press any key to start profiling...");
-    //Console.ReadKey();
-    
     var benchmarkRunner = new AtomicMazeBenchmarkRunner();
     benchmarkRunner.Init(null);
 
@@ -14,11 +11,12 @@ if(args.Length > 0 && args[0] == "profile")
     {
         Console.WriteLine("Running iteration: " + i);
         
-        benchmarkRunner.FindPathBenchmark((10, 10), (502, 374));
+        benchmarkRunner.FindPath((10, 10), (502, 374));
     }
-
-    Console.WriteLine("Finished profiling. Press any key to exit...");
-    //Console.ReadKey();
+}
+else if (args.Length > 0 && args[0] == "internal")
+{
+    BenchmarkRunner.Run<InternalBenchmarkRunner>();
 }
 else
 {

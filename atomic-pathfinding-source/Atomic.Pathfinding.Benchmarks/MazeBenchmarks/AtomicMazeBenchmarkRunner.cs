@@ -21,7 +21,7 @@ public unsafe class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
         _pathfinder = new Pathfinder(_maze);
     }
 
-    public override void FindPathBenchmark((int x, int y) start, (int x, int y) destination)
+    public override void FindPath((int x, int y) start, (int x, int y) destination)
     {
         if (_pathfinder == null)
         {
