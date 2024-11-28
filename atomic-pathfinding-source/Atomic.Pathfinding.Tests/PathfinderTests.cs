@@ -23,7 +23,7 @@ namespace Atomic.Pathfinding.Tests
             
 
             var result = aStar.GetPath(agent, start, destination);
-            maze.AddPath((Coordinate[])result.Path);
+            maze.AddPath(result.Path.ToArray());
 
             if (!Directory.Exists("Results/"))
             {
@@ -58,7 +58,7 @@ namespace Atomic.Pathfinding.Tests
             
             if(result.IsPathFound)
             {
-                maze.AddPath(result.Path);
+                maze.AddPath(result.Path.ToArray());
             }
 
             if (!Directory.Exists("Results/"))

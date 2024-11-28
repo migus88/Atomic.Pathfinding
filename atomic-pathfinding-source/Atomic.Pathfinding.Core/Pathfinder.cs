@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using Atomic.Pathfinding.Core.Data;
 using Atomic.Pathfinding.Core.Interfaces;
@@ -105,18 +106,26 @@ namespace Atomic.Pathfinding.Core
             {
                 return result;
             }
-
-
+            
             var last = current;
-            var stack = new Coordinate[last->Depth];
+            var depth = last->Depth;
 
-            for (var i = last->Depth - 1; i >= 0; i--)
+            // Rent an array from the pool
+            var pathArray = ArrayPool<Coordinate>.Shared.Rent(depth);
+            Span<Coordinate> path = pathArray;
+
+            for (var i = depth - 1; i >= 0; i--)
             {
-                stack[i] = last->Coordinate;
-                last = _cellProvider.GetCellPointer(last->ParentCoordinate.X, last->ParentCoordinate.Y);
+                path[i] = last->Coordinate;
+                var parentCoord = last->ParentCoordinate;
+                last = _cellProvider.GetCellPointer(parentCoord.X, parentCoord.Y);
             }
 
-            result.Path = stack;
+            // Construct the result using the span
+            result.Path = path[..depth];
+
+            // Return the array to the pool
+            ArrayPool<Coordinate>.Shared.Return(pathArray);
 
             return result;
         }

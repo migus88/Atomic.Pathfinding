@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Atomic.Pathfinding.Core.Data
 {
-    public struct PathResult
+    public ref struct PathResult
     {
-        public bool IsPathFound => Path != null && Path.Any();
-        public Coordinate[] Path { get; set; }
+        public bool IsPathFound => Path != null && Path.Length > 0;
+        public ReadOnlySpan<Coordinate> Path { get; set; }
     }
 }

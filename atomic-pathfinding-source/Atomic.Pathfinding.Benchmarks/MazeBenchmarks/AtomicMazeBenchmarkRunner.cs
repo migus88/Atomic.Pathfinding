@@ -12,7 +12,6 @@ public unsafe class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
         
     private Pathfinder _pathfinder;
     private IAgent _agent;
-    private PathResult _result;
 
     public override void Init(Maze maze)
     {
@@ -28,9 +27,9 @@ public unsafe class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
         {
             return;
         }
-        _result = _pathfinder.GetPath(_agent, (Coordinate)start, (Coordinate)destination);
+        var result = _pathfinder.GetPath(_agent, (Coordinate)start, (Coordinate)destination);
 
-        if (!_result.IsPathFound)
+        if (!result.IsPathFound)
         {
             throw new Exception("Path not found");
         }
@@ -56,7 +55,7 @@ public unsafe class AtomicMazeBenchmarkRunner : BaseMazeBenchmarkRunner
             }
         }
             
-        _maze.AddPath(result.Path);
+        _maze.AddPath(result.Path.ToArray());
             
         SaveMazeResultAsImage();
     }

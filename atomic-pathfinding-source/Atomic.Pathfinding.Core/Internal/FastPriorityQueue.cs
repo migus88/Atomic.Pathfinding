@@ -5,9 +5,9 @@ using Atomic.Pathfinding.Core.Interfaces;
 
 namespace Atomic.Pathfinding.Core.Internal
 {
-    internal unsafe class FastPriorityQueue
+    internal unsafe class FastPriorityQueue : IDisposable
     {
-        public int Count { get; private set; }
+        public int Count;
 
         private readonly Cell*[] _collection;
 
@@ -260,5 +260,10 @@ namespace Atomic.Pathfinding.Core.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasHigherOrEqualPriority(Cell* higher, Cell* lower) =>
             higher->ScoreF <= lower->ScoreF;
+
+        public void Dispose()
+        {
+            
+        }
     }
 }
