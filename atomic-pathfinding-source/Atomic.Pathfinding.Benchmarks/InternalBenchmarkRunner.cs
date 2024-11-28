@@ -1,5 +1,6 @@
 using Atomic.Pathfinding.Core;
 using Atomic.Pathfinding.Core.Data;
+using Atomic.Pathfinding.Core.Helpers;
 using Atomic.Pathfinding.Core.Interfaces;
 using Atomic.Pathfinding.Tools;
 using BenchmarkDotNet.Attributes;
@@ -31,19 +32,21 @@ public class InternalBenchmarkRunner
     public unsafe void CopyingResultToArray()
     {
         var result = FindPath((10, 10), (502, 374));
-        var array = stackalloc Coordinate[result.Path.Length];
-
-        for (int i = 0; i < result.Path.Length; i++)
-        {
-            array[i] = result.Path[i];
-        }
+        var array = result.Path.ToCoordinateArrayPointer();
+        
+        var firstElement = GetFirstElement(array);
+    }
+    
+    private unsafe Coordinate GetFirstElement(Coordinate* array)
+    {
+        return array[0];
     }
     
     public PathResult FindPath((int x, int y) start, (int x, int y) destination)
     {
         if (_pathfinder == null)
         {
-            throw new Exception("Pathfounder is not initialized");
+            throw new Exception("Pathfinder is not initialized");
         }
         
         var result = _pathfinder.GetPath(_agent, (Coordinate)start, (Coordinate)destination);
