@@ -5,6 +5,17 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyVersion>0.9.0</AssemblyVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Migs.Pathfinding</Title>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <PackageId>Migs.Pathfinding</PackageId>
+    <Version>0.9.0</Version>
+    <Authors>Yuri Sokolov</Authors>
+    <Description>Unsafe implementation of AStar algorythm</Description>
+    <PackageTags>pathfinding;astar</PackageTags>
+    <RepositoryUrl>https://github.com/migus88/Migs.Pathfinding</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

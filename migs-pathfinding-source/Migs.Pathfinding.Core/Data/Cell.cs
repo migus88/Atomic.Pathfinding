@@ -6,7 +6,7 @@ using Migs.Pathfinding.Core.Internal;
 
 namespace Migs.Pathfinding.Core.Data
 {
-    public struct Cell : ICell
+    public struct Cell
     {
         public Coordinate Coordinate { get; set; }
         public bool IsWalkable { get; set; }

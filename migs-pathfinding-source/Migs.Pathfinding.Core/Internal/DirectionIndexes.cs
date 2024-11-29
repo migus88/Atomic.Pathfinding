@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using Migs.Pathfinding.Core.Data;
-
-namespace Migs.Pathfinding.Core.Helpers
+namespace Migs.Pathfinding.Core.Internal
 {
-    public static class DirectionIndexes
+    internal static class DirectionIndexes
     {
         public const int West = 0;
         public const int East = 1;

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using Migs.Pathfinding.Core.Data;
 using Migs.Pathfinding.Core.Interfaces;
 using Migs.Pathfinding.Core.Internal;
-using static Migs.Pathfinding.Core.Helpers.DirectionIndexes;
+using static Migs.Pathfinding.Core.Internal.DirectionIndexes;
 
 namespace Migs.Pathfinding.Core
 {
