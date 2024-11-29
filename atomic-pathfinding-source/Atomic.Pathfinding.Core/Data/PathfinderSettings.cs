@@ -21,5 +21,8 @@ namespace Atomic.Pathfinding.Core.Data
 
         /// <inheritdoc/>
         public float DiagonalMovementMultiplier { get; set; } = 1.41f;
+
+        /// <inheritdoc/>
+        public int? InitialBufferSize { get; set; }
     }
 }

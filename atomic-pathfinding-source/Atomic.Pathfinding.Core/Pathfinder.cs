@@ -27,8 +27,8 @@ namespace Atomic.Pathfinding.Core
             _height = _cellProvider.Height;
             
             _settings = FastPathfinderSettings.FromSettings(settings ?? new PathfinderSettings());
-
-            _openSet = new FastPriorityQueue(_cellProvider.Width * _cellProvider.Height);
+            
+            _openSet = new FastPriorityQueue(settings?.InitialBufferSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,6 +38,7 @@ namespace Atomic.Pathfinding.Core
                 throw new Exception("Destination is not valid");
 
             _cellProvider.ResetCells();
+
             _openSet.Clear();
 
             var scoreH = GetH(from.X, from.Y, to.X, to.Y);

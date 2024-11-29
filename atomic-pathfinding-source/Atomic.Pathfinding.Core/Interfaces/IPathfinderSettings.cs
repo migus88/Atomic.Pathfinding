@@ -36,4 +36,11 @@ public interface IPathfinderSettings
     /// The cost of the movement in a diagonal line
     /// </summary>
     float DiagonalMovementMultiplier { get; set; }
+
+    /// <summary>
+    /// The initial size of the Open Set buffer. <br/>
+    /// After multiple benchmarks, it looks like even in big mazes, the buffer size is not exceeding 100-200 elements. <br/>
+    /// Adjust this value if you're experiencing allocations during the pathfinding process.
+    /// </summary>
+    int? InitialBufferSize { get; set; }
 }
